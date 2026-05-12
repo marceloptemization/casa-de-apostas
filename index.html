@@ -375,10 +375,6 @@
     <div>
       <div class="live">● <span class="live-dot">EM DIRETO</span> · <span id="date"></span><span class="admin-badge">ADMIN</span></div>
       <h1>Vem ou<br>não vem?</h1>
-      <div class="subject">
-        <span>Aposta para amanhã sobre</span>
-        <button class="subject-name" id="subjectBtn"></button>
-      </div>
       <div class="sync-status" id="syncStatus">a sincronizar…</div>
     </div>
     <div class="stamp">AMANHÃ</div>
@@ -501,7 +497,6 @@ let state = {
   date: tomorrowStr(),
   bets: {},
   outcome: null,
-  colleagueName: 'A Convidada Especial',
 };
 let myName = localStorage.getItem('myName') || '';
 let lastSync = null;
@@ -522,7 +517,6 @@ async function fetchState() {
         date: tomorrowStr(),
         bets: {},
         outcome: null,
-        colleagueName: remote.colleagueName || 'A Convidada Especial',
       };
       state = fresh;
       await pushState();
@@ -574,9 +568,8 @@ function escapeHtml(s) {
 
 function render() {
   document.getElementById('date').textContent = prettyDate(state.date);
-  document.getElementById('subjectBtn').textContent = state.colleagueName;
   document.getElementById('estYear').textContent = `EST. ${new Date().getFullYear()}`;
-  document.getElementById('ticker').textContent = `★ CASA DE APOSTAS INTERNA ★ ${state.colleagueName.toUpperCase()} ★ COTAÇÃO AO MINUTO ★ APOSTE COM RESPONSABILIDADE ★`;
+  document.getElementById('ticker').textContent = `★ CASA DE APOSTAS INTERNA ★ VEM OU NÃO VEM? ★ COTAÇÃO AO MINUTO ★ APOSTE COM RESPONSABILIDADE ★`;
 
   if (lastSync) {
     const secs = Math.round((new Date() - lastSync) / 1000);
@@ -595,6 +588,7 @@ function render() {
   document.getElementById('naoLabel').textContent = (100 - simPct) >= 15 && total > 0 ? `VEM ${100 - simPct}%` : '';
   document.getElementById('noBetsMsg').classList.toggle('hidden', total > 0);
 
+  const isAdmin = document.body.classList.contains('is-admin');
   if (state.outcome) {
     document.getElementById('betCard').classList.add('hidden');
     document.getElementById('judgeCard').classList.add('hidden');
@@ -607,10 +601,11 @@ function render() {
     document.getElementById('winnersText').textContent = winners.length > 0
       ? `Vencedores: ${winners.join(', ')}`
       : 'Ninguém acertou. A casa fica com tudo.';
+    document.getElementById('undoBtn').classList.toggle('hidden', !isAdmin);
   } else {
     document.getElementById('betCard').classList.remove('hidden');
     document.getElementById('outcomeCard').classList.add('hidden');
-    document.getElementById('judgeCard').classList.toggle('hidden', total === 0);
+    document.getElementById('judgeCard').classList.toggle('hidden', total === 0 || !isAdmin);
   }
 
   const listEl = document.getElementById('bettorsList');
@@ -684,16 +679,6 @@ async function undoOutcome() {
   await pushState();
 }
 
-async function promptColleagueName() {
-  const v = prompt('Sobre quem é a aposta?', state.colleagueName);
-  if (v === null) return;
-  const trimmed = v.trim();
-  if (!trimmed) return;
-  state.colleagueName = trimmed;
-  render();
-  await pushState();
-}
-
 async function resetRound() {
   if (!confirm('Começar uma ronda nova? Isto apaga apostas, motivos e resultado.')) return;
   state.bets = {};
@@ -754,7 +739,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('undoBtn').addEventListener('click', undoOutcome);
-  document.getElementById('subjectBtn').addEventListener('click', promptColleagueName);
   document.getElementById('resetRoundBtn').addEventListener('click', resetRound);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {

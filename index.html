@@ -88,24 +88,29 @@
     text-transform: uppercase;
     margin-bottom: 12px;
   }
+  @property --sim {
+    syntax: '<percentage>';
+    inherits: false;
+    initial-value: 50%;
+  }
   .odds-bar {
-    height: 48px; display: flex; background: #0e3a26;
-    overflow: hidden; margin-top: 12px;
+    height: 48px;
+    margin-top: 12px;
+    position: relative;
+    background: linear-gradient(to right, #8b1e2d 0%, #8b1e2d var(--sim, 50%), #0e3a26 var(--sim, 50%), #0e3a26 100%);
+    transition: --sim 0.5s ease;
+    overflow: hidden;
   }
-  .odds-sim {
-    background: #8b1e2d; color: #f4ebd0;
-    display: flex; align-items: center; padding-left: 12px;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    transition: width 0.5s ease;
-  }
-  .odds-nao {
+  .odds-text {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
     color: #f4ebd0;
-    display: flex; align-items: center; justify-content: flex-end;
-    padding-right: 12px; flex: 1;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
   }
+  .odds-text-sim { left: 12px; }
+  .odds-text-nao { right: 12px; }
   input[type=text] {
     width: 100%;
     padding: 12px 14px;
@@ -392,9 +397,9 @@
         <div class="label">Cotação ao minuto</div>
         <div style="font-family:'JetBrains Mono',monospace; font-size:0.7rem;" id="betCount">0 apostas</div>
       </div>
-      <div class="odds-bar">
-        <div class="odds-sim" id="oddsSim" style="width: 50%;"><span id="simLabel"></span></div>
-        <div class="odds-nao"><span id="naoLabel"></span></div>
+      <div class="odds-bar" id="oddsBar">
+        <span class="odds-text odds-text-sim" id="simLabel"></span>
+        <span class="odds-text odds-text-nao" id="naoLabel"></span>
       </div>
       <div class="small-text hidden" id="noBetsMsg">Ainda ninguém apostou. Sê o primeiro a arriscar.</div>
     </div>
@@ -585,7 +590,7 @@ function render() {
 
   document.getElementById('betCount').textContent = `${total} ${total === 1 ? 'aposta' : 'apostas'}`;
   document.getElementById('tabCount').textContent = total > 0 ? ` (${total})` : '';
-  document.getElementById('oddsSim').style.width = `${simPct}%`;
+  document.getElementById('oddsBar').style.setProperty('--sim', `${simPct}%`);
   document.getElementById('simLabel').textContent = simPct >= 15 ? `${simPct}% FALTA` : '';
   document.getElementById('naoLabel').textContent = (100 - simPct) >= 15 && total > 0 ? `VEM ${100 - simPct}%` : '';
   document.getElementById('noBetsMsg').classList.toggle('hidden', total > 0);
@@ -703,17 +708,9 @@ function setTab(tab) {
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${tab}`));
 }
 
-function applyAdminFromUrl() {
-  const params = new URLSearchParams(window.location.search);
-  const v = params.get('admin');
-  if (v === 'on') {
-    localStorage.setItem('isAdmin', 'true');
-    window.history.replaceState({}, '', window.location.pathname);
-  } else if (v === 'off') {
-    localStorage.removeItem('isAdmin');
-    window.history.replaceState({}, '', window.location.pathname);
-  }
-  document.body.classList.toggle('is-admin', localStorage.getItem('isAdmin') === 'true');
+function applyAdmin() {
+  const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'on';
+  document.body.classList.toggle('is-admin', isAdmin);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -722,7 +719,7 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  applyAdminFromUrl();
+  applyAdmin();
 
   document.getElementById('nameInput').addEventListener('input', (e) => {
     const has = !!e.target.value.trim();

@@ -422,7 +422,10 @@ async function fetchState() {
     const remote = data.record;
     // Reset automático: o "dia da aposta" (state.date) é amanhã quando se aposta,
     // e hoje no próprio dia do evento. Quando passa para o passado, começa ronda nova.
-    if (!remote.date || remote.date < todayStr()) {
+    // Também reseta se a ronda está vazia e desatualizada (ex.: bin estagnado de versão antiga).
+    const hasActivity = (remote.bets && Object.keys(remote.bets).length > 0) || remote.outcome;
+    const stale = !remote.date || remote.date < todayStr() || (!hasActivity && remote.date !== tomorrowStr());
+    if (stale) {
       const fresh = {
         date: tomorrowStr(),
         bets: {},

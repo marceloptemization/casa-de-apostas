@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa de Apostas</title>
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Karla:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f4ebd0;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(14,58,38,0.04) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(139,30,45,0.04) 0%, transparent 50%);
+    font-family: 'Karla', sans-serif;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+  .ticker {
+    background: #0e3a26;
+    color: #f4ebd0;
+    padding: 6px 0;
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+  }
+  .ticker-content {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll 30s linear infinite;
+  }
+  @keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+  }
+  .container { max-width: 800px; margin: 0 auto; padding: 0 16px; }
+  .header { padding: 24px 16px 12px; max-width: 800px; margin: 0 auto; }
+  .live {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    color: #8b1e2d;
+  }
+  .live-dot { animation: pulse 1.5s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  h1 {
+    font-family: 'Abril Fatface', serif;
+    font-size: clamp(2.5rem, 9vw, 4.5rem);
+    line-height: 0.95;
+    margin: 8px 0 16px;
+  }
+  .subject {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    font-size: 1rem;
+  }
+  .subject-name {
+    font-family: 'Abril Fatface', serif;
+    font-size: 1.6rem;
+    color: #8b1e2d;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+  }
+  .subject-name:hover { opacity: 0.7; }
+  .sync-status {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    opacity: 0.5;
+    margin-top: 4px;
+  }
+  .card {
+    background: #fefdf5;
+    border: 1px solid #1a1a1a;
+    box-shadow: 4px 4px 0 #1a1a1a;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .odds-bar {
+    height: 48px; display: flex; background: #0e3a26;
+    overflow: hidden; margin-top: 12px;
+  }
+  .odds-sim {
+    background: #8b1e2d; color: #f4ebd0;
+    display: flex; align-items: center; padding-left: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    transition: width 0.5s ease;
+  }
+  .odds-nao {
+    color: #f4ebd0;
+    display: flex; align-items: center; justify-content: flex-end;
+    padding-right: 12px; flex: 1;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+  }
+  input[type=text] {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid #1a1a1a;
+    background: transparent;
+    font-family: 'Karla', sans-serif;
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+  input:focus { outline: none; box-shadow: 2px 2px 0 #1a1a1a; }
+  .vote-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+  .vote-btn {
+    padding: 22px 12px;
+    border: 2px solid #1a1a1a;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+    color: #f4ebd0;
+    font-family: 'Karla', sans-serif;
+  }
+  .vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .vote-btn:not(:disabled):hover { transform: translateY(-3px) rotate(-1deg); }
+  .vote-btn:active { transform: translateY(0); }
+  .vote-btn .small {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    opacity: 0.8;
+  }
+  .vote-btn .big {
+    font-family: 'Abril Fatface', serif;
+    font-size: 2.2rem;
+    margin: 4px 0;
+  }
+  .vote-sim { background: #8b1e2d; }
+  .vote-nao { background: #0e3a26; }
+  .bet-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+  }
+  .bet-row.winner { background: rgba(14,58,38,0.08); padding-left: 8px; }
+  .bet-row.loser { opacity: 0.5; }
+  .bet-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    color: #f4ebd0;
+  }
+  .pill-sim { background: #8b1e2d; }
+  .pill-nao { background: #0e3a26; }
+  .outcome-card {
+    color: #f4ebd0;
+    padding: 28px 22px;
+  }
+  .outcome-card.faltou { background: #8b1e2d; }
+  .outcome-card.veio { background: #0e3a26; }
+  .outcome-card .big {
+    font-family: 'Abril Fatface', serif;
+    font-size: 4rem;
+    line-height: 1;
+    margin: 8px 0 16px;
+  }
+  .judge-card {
+    background: #1a1a1a; color: #f4ebd0;
+    padding: 20px;
+  }
+  .judge-btns {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-top: 12px;
+  }
+  .judge-btn {
+    padding: 14px;
+    background: transparent;
+    border: 1px solid #f4ebd0;
+    color: #f4ebd0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+  }
+  .judge-btn:hover { background: rgba(255,255,255,0.1); }
+  .link-btn {
+    background: none; border: none; padding: 0;
+    color: inherit; cursor: pointer;
+    text-decoration: underline;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    opacity: 0.7;
+    margin-top: 12px;
+  }
+  .link-btn:hover { opacity: 1; }
+  .small-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    opacity: 0.6;
+    margin-top: 8px;
+  }
+  .hidden { display: none !important; }
+  .stamp {
+    display: inline-block;
+    padding: 4px 12px;
+    border: 2px solid #8b1e2d;
+    color: #8b1e2d;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    transform: rotate(-2deg);
+  }
+  .header-row {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; flex-wrap: wrap; gap: 16px;
+  }
+  footer {
+    border-top: 2px solid #1a1a1a;
+    background: #0e3a26;
+    color: #f4ebd0;
+    margin-top: 32px;
+    padding: 14px 0;
+  }
+  .footer-inner {
+    max-width: 800px; margin: 0 auto;
+    padding: 0 16px;
+    display: flex; justify-content: space-between;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+  }
+  .error-banner {
+    background: #8b1e2d; color: #f4ebd0;
+    padding: 10px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    text-align: center;
+  }
+  @media (max-width: 500px) {
+    .vote-btn .big { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker-content" id="ticker">★ CASA DE APOSTAS INTERNA ★ COTAÇÃO AO MINUTO ★</div>
+</div>
+
+<div id="errorBanner" class="error-banner hidden"></div>
+
+<div class="header">
+  <div class="header-row">
+    <div>
+      <div class="live">● <span class="live-dot">EM DIRETO</span> · <span id="date"></span></div>
+      <h1>Vem ou<br>não vem?</h1>
+      <div class="subject">
+        <span>Aposta de hoje sobre</span>
+        <button class="subject-name" id="subjectBtn"></button>
+      </div>
+      <div class="sync-status" id="syncStatus">a sincronizar…</div>
+    </div>
+    <div class="stamp">HOJE</div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:baseline;">
+      <div class="label">Cotação ao minuto</div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:0.7rem;" id="betCount">0 apostas</div>
+    </div>
+    <div class="odds-bar">
+      <div class="odds-sim" id="oddsSim" style="width: 50%;"><span id="simLabel"></span></div>
+      <div class="odds-nao"><span id="naoLabel"></span></div>
+    </div>
+    <div class="small-text hidden" id="noBetsMsg">Ainda ninguém apostou. Sê o primeiro a arriscar.</div>
+  </div>
+
+  <div class="card" id="betCard">
+    <div class="label" style="color:#8b1e2d;">● Faz a tua aposta</div>
+    <input type="text" id="nameInput" placeholder="O teu nome ou alcunha">
+    <div class="vote-grid">
+      <button class="vote-btn vote-sim" id="voteSim" disabled>
+        <div class="small">APOSTO QUE</div>
+        <div class="big">FALTA</div>
+        <div class="small">não vai aparecer</div>
+      </button>
+      <button class="vote-btn vote-nao" id="voteNao" disabled>
+        <div class="small">APOSTO QUE</div>
+        <div class="big">VEM</div>
+        <div class="small">vai aparecer</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="card outcome-card hidden" id="outcomeCard">
+    <div class="label" style="opacity:0.8;">Resultado oficial</div>
+    <div class="big" id="outcomeText"></div>
+    <div style="font-family:'JetBrains Mono',monospace; font-size:0.9rem;" id="winnersText"></div>
+    <button class="link-btn" id="undoBtn">desfazer resultado</button>
+  </div>
+
+  <div class="card hidden" id="bettorsCard">
+    <div class="label">Apostadores de hoje</div>
+    <div id="bettorsList"></div>
+  </div>
+
+  <div class="card judge-card hidden" id="judgeCard">
+    <div class="label" style="opacity:0.7;">Quando souberes, marca o resultado</div>
+    <div class="judge-btns">
+      <button class="judge-btn" data-outcome="faltou">FALTOU</button>
+      <button class="judge-btn" data-outcome="veio">VEIO</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="label">Configuração</div>
+    <div style="display:flex; gap:8px;">
+      <input type="text" id="settingsName" style="margin-bottom:0;" placeholder="alcunha">
+      <button id="saveNameBtn" style="background:#0e3a26; color:#f4ebd0; border:none; padding:10px 18px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; letter-spacing:0.15em; cursor:pointer;">GUARDAR</button>
+    </div>
+    <div class="small-text">Discrição recomendada. Apostas e resultado apagam-se automaticamente à meia-noite.</div>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <span>★ CASA DE APOSTAS INTERNA ★</span>
+    <span id="estYear"></span>
+  </div>
+</footer>
+
+<script>
+// ============================================
+// CONFIGURAÇÃO — METE AQUI AS TUAS CREDENCIAIS
+// ============================================
+const JSONBIN_BIN_ID = '6a0353bbadc21f119a8d31fd';
+const JSONBIN_KEY = '$2a$10$xHyAJiB9NJkFYIoE3dRo8Op4qukI1qcstmOpV/oT2KN45cOcwFc5C';
+// ============================================
+
+const API_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+const POLL_INTERVAL = 5000;
+
+const todayStr = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+
+const prettyDate = (iso) => {
+  if (!iso) return '';
+  const [y,m,d] = iso.split('-');
+  const months = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  return `${d} ${months[parseInt(m)-1]} ${y}`;
+};
+
+let state = {
+  date: todayStr(),
+  bets: {},
+  outcome: null,
+  colleagueName: 'A Convidada Especial',
+};
+let myName = localStorage.getItem('myName') || '';
+let lastSync = null;
+let isWriting = false;
+
+async function fetchState() {
+  try {
+    const res = await fetch(`${API_URL}/latest`, {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) throw new Error('fetch falhou');
+    const data = await res.json();
+    const remote = data.record;
+    // Reset diário automático
+    if (remote.date !== todayStr()) {
+      const fresh = {
+        date: todayStr(),
+        bets: {},
+        outcome: null,
+        colleagueName: remote.colleagueName || 'A Convidada Especial',
+      };
+      state = fresh;
+      await pushState();
+    } else {
+      state = remote;
+    }
+    lastSync = new Date();
+    hideError();
+    render();
+  } catch (e) {
+    showError('Erro de sincronização. A tentar de novo…');
+  }
+}
+
+async function pushState() {
+  if (isWriting) return;
+  isWriting = true;
+  try {
+    const res = await fetch(API_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY,
+      },
+      body: JSON.stringify(state),
+    });
+    if (!res.ok) throw new Error('push falhou');
+    lastSync = new Date();
+    hideError();
+  } catch (e) {
+    showError('Erro a guardar. Tenta de novo.');
+  } finally {
+    isWriting = false;
+  }
+}
+
+function showError(msg) {
+  const b = document.getElementById('errorBanner');
+  b.textContent = msg;
+  b.classList.remove('hidden');
+}
+function hideError() {
+  document.getElementById('errorBanner').classList.add('hidden');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function render() {
+  document.getElementById('date').textContent = prettyDate(state.date);
+  document.getElementById('subjectBtn').textContent = state.colleagueName;
+  document.getElementById('estYear').textContent = `EST. ${new Date().getFullYear()}`;
+  document.getElementById('ticker').textContent = `★ CASA DE APOSTAS INTERNA ★ ${state.colleagueName.toUpperCase()} ★ COTAÇÃO AO MINUTO ★ APOSTE COM RESPONSABILIDADE ★`;
+  document.getElementById('settingsName').value = state.colleagueName;
+
+  if (lastSync) {
+    const secs = Math.round((new Date() - lastSync) / 1000);
+    document.getElementById('syncStatus').textContent = secs < 10 ? 'sincronizado agora' : `há ${secs}s`;
+  }
+
+  const bets = state.bets || {};
+  const total = Object.keys(bets).length;
+  const simCount = Object.values(bets).filter(v => v === 'sim').length;
+  const simPct = total ? Math.round((simCount/total)*100) : 50;
+
+  document.getElementById('betCount').textContent = `${total} ${total === 1 ? 'aposta' : 'apostas'}`;
+  document.getElementById('oddsSim').style.width = `${simPct}%`;
+  document.getElementById('simLabel').textContent = simPct >= 15 ? `${simPct}% FALTA` : '';
+  document.getElementById('naoLabel').textContent = (100 - simPct) >= 15 && total > 0 ? `VEM ${100 - simPct}%` : '';
+  document.getElementById('noBetsMsg').classList.toggle('hidden', total > 0);
+
+  if (state.outcome) {
+    document.getElementById('betCard').classList.add('hidden');
+    document.getElementById('judgeCard').classList.add('hidden');
+    const oc = document.getElementById('outcomeCard');
+    oc.classList.remove('hidden');
+    oc.className = `card outcome-card ${state.outcome}`;
+    document.getElementById('outcomeText').textContent = state.outcome === 'faltou' ? 'FALTOU.' : 'VEIO.';
+    const winningVote = state.outcome === 'faltou' ? 'sim' : 'nao';
+    const winners = Object.entries(bets).filter(([_,v]) => v === winningVote).map(([n]) => n);
+    document.getElementById('winnersText').textContent = winners.length > 0
+      ? `Vencedores: ${winners.join(', ')}`
+      : 'Ninguém acertou. A casa fica com tudo.';
+  } else {
+    document.getElementById('betCard').classList.remove('hidden');
+    document.getElementById('outcomeCard').classList.add('hidden');
+    document.getElementById('judgeCard').classList.toggle('hidden', total === 0);
+  }
+
+  const bettorsCard = document.getElementById('bettorsCard');
+  if (total > 0) {
+    bettorsCard.classList.remove('hidden');
+    const winningVote = state.outcome === 'faltou' ? 'sim' : state.outcome === 'veio' ? 'nao' : null;
+    document.getElementById('bettorsList').innerHTML = Object.entries(bets).map(([name, vote]) => {
+      let cls = '';
+      if (winningVote) cls = vote === winningVote ? 'winner' : 'loser';
+      return `
+        <div class="bet-row ${cls}">
+          <span style="font-weight:500;">${winningVote && vote === winningVote ? '✓ ' : ''}${escapeHtml(name)}</span>
+          <span class="bet-pill ${vote === 'sim' ? 'pill-sim' : 'pill-nao'}">${vote === 'sim' ? 'FALTA' : 'VEM'}</span>
+        </div>
+      `;
+    }).join('');
+  } else {
+    bettorsCard.classList.add('hidden');
+  }
+
+  // Pre-fill name
+  if (myName && !document.getElementById('nameInput').value) {
+    document.getElementById('nameInput').value = myName;
+    document.getElementById('voteSim').disabled = false;
+    document.getElementById('voteNao').disabled = false;
+  }
+}
+
+async function placeBet(vote) {
+  const name = document.getElementById('nameInput').value.trim();
+  if (!name || state.outcome) return;
+  myName = name;
+  localStorage.setItem('myName', name);
+  state.bets[name] = vote;
+  render();
+  await pushState();
+}
+
+async function setOutcome(outcome) {
+  state.outcome = outcome;
+  render();
+  await pushState();
+}
+
+async function undoOutcome() {
+  state.outcome = null;
+  render();
+  await pushState();
+}
+
+async function saveColleagueName() {
+  const v = document.getElementById('settingsName').value.trim();
+  if (!v) return;
+  state.colleagueName = v;
+  render();
+  await pushState();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  if (JSONBIN_BIN_ID === 'COLA_AQUI_O_BIN_ID') {
+    showError('Configura JSONBIN_BIN_ID e JSONBIN_KEY no código.');
+    return;
+  }
+
+  document.getElementById('nameInput').addEventListener('input', (e) => {
+    const has = !!e.target.value.trim();
+    document.getElementById('voteSim').disabled = !has;
+    document.getElementById('voteNao').disabled = !has;
+  });
+
+  document.getElementById('voteSim').addEventListener('click', () => placeBet('sim'));
+  document.getElementById('voteNao').addEventListener('click', () => placeBet('nao'));
+
+  document.querySelectorAll('.judge-btn').forEach(btn => {
+    btn.addEventListener('click', () => setOutcome(btn.dataset.outcome));
+  });
+
+  document.getElementById('undoBtn').addEventListener('click', undoOutcome);
+  document.getElementById('saveNameBtn').addEventListener('click', saveColleagueName);
+  document.getElementById('subjectBtn').addEventListener('click', () => {
+    document.getElementById('settingsName').focus();
+    document.getElementById('settingsName').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  fetchState();
+  setInterval(fetchState, POLL_INTERVAL);
+});
+</script>
+</body>
+</html>

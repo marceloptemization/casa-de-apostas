@@ -247,6 +247,37 @@
     font-size: 0.75rem;
     text-align: center;
   }
+  .tabs {
+    display: flex;
+    margin-bottom: 20px;
+  }
+  .tab-btn {
+    flex: 1;
+    background: transparent;
+    border: 2px solid #1a1a1a;
+    padding: 12px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #1a1a1a;
+  }
+  .tab-btn + .tab-btn { border-left-width: 0; }
+  .tab-btn.active {
+    background: #1a1a1a;
+    color: #f4ebd0;
+  }
+  .tab-count { opacity: 0.7; margin-left: 6px; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  .empty-state {
+    text-align: center;
+    padding: 24px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    opacity: 0.6;
+  }
   @media (max-width: 500px) {
     .vote-btn .big { font-size: 1.8rem; }
   }
@@ -266,72 +297,74 @@
       <div class="live">● <span class="live-dot">EM DIRETO</span> · <span id="date"></span></div>
       <h1>Vem ou<br>não vem?</h1>
       <div class="subject">
-        <span>Aposta de hoje sobre</span>
+        <span>Aposta para amanhã sobre</span>
         <button class="subject-name" id="subjectBtn"></button>
       </div>
       <div class="sync-status" id="syncStatus">a sincronizar…</div>
     </div>
-    <div class="stamp">HOJE</div>
+    <div class="stamp">AMANHÃ</div>
   </div>
 </div>
 
 <div class="container">
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:baseline;">
-      <div class="label">Cotação ao minuto</div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:0.7rem;" id="betCount">0 apostas</div>
-    </div>
-    <div class="odds-bar">
-      <div class="odds-sim" id="oddsSim" style="width: 50%;"><span id="simLabel"></span></div>
-      <div class="odds-nao"><span id="naoLabel"></span></div>
-    </div>
-    <div class="small-text hidden" id="noBetsMsg">Ainda ninguém apostou. Sê o primeiro a arriscar.</div>
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="casa">Casa</button>
+    <button class="tab-btn" data-tab="apostas">Apostas<span class="tab-count" id="tabCount"></span></button>
   </div>
 
-  <div class="card" id="betCard">
-    <div class="label" style="color:#8b1e2d;">● Faz a tua aposta</div>
-    <input type="text" id="nameInput" placeholder="O teu nome ou alcunha">
-    <div class="vote-grid">
-      <button class="vote-btn vote-sim" id="voteSim" disabled>
-        <div class="small">APOSTO QUE</div>
-        <div class="big">FALTA</div>
-        <div class="small">não vai aparecer</div>
-      </button>
-      <button class="vote-btn vote-nao" id="voteNao" disabled>
-        <div class="small">APOSTO QUE</div>
-        <div class="big">VEM</div>
-        <div class="small">vai aparecer</div>
-      </button>
+  <div class="tab-pane active" id="tab-casa">
+    <div class="card">
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <div class="label">Cotação ao minuto</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:0.7rem;" id="betCount">0 apostas</div>
+      </div>
+      <div class="odds-bar">
+        <div class="odds-sim" id="oddsSim" style="width: 50%;"><span id="simLabel"></span></div>
+        <div class="odds-nao"><span id="naoLabel"></span></div>
+      </div>
+      <div class="small-text hidden" id="noBetsMsg">Ainda ninguém apostou. Sê o primeiro a arriscar.</div>
+    </div>
+
+    <div class="card" id="betCard">
+      <div class="label" style="color:#8b1e2d;">● Faz a tua aposta</div>
+      <input type="text" id="nameInput" placeholder="O teu nome ou alcunha">
+      <div class="vote-grid">
+        <button class="vote-btn vote-sim" id="voteSim" disabled>
+          <div class="small">APOSTO QUE</div>
+          <div class="big">FALTA</div>
+          <div class="small">não vai aparecer</div>
+        </button>
+        <button class="vote-btn vote-nao" id="voteNao" disabled>
+          <div class="small">APOSTO QUE</div>
+          <div class="big">VEM</div>
+          <div class="small">vai aparecer</div>
+        </button>
+      </div>
+    </div>
+
+    <div class="card outcome-card hidden" id="outcomeCard">
+      <div class="label" style="opacity:0.8;">Resultado oficial</div>
+      <div class="big" id="outcomeText"></div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:0.9rem;" id="winnersText"></div>
+      <button class="link-btn" id="undoBtn">desfazer resultado</button>
+    </div>
+
+    <div class="card judge-card hidden" id="judgeCard">
+      <div class="label" style="opacity:0.7;">Quando souberes, marca o resultado</div>
+      <div class="judge-btns">
+        <button class="judge-btn" data-outcome="faltou">FALTOU</button>
+        <button class="judge-btn" data-outcome="veio">VEIO</button>
+      </div>
     </div>
   </div>
 
-  <div class="card outcome-card hidden" id="outcomeCard">
-    <div class="label" style="opacity:0.8;">Resultado oficial</div>
-    <div class="big" id="outcomeText"></div>
-    <div style="font-family:'JetBrains Mono',monospace; font-size:0.9rem;" id="winnersText"></div>
-    <button class="link-btn" id="undoBtn">desfazer resultado</button>
-  </div>
-
-  <div class="card hidden" id="bettorsCard">
-    <div class="label">Apostadores de hoje</div>
-    <div id="bettorsList"></div>
-  </div>
-
-  <div class="card judge-card hidden" id="judgeCard">
-    <div class="label" style="opacity:0.7;">Quando souberes, marca o resultado</div>
-    <div class="judge-btns">
-      <button class="judge-btn" data-outcome="faltou">FALTOU</button>
-      <button class="judge-btn" data-outcome="veio">VEIO</button>
+  <div class="tab-pane" id="tab-apostas">
+    <div class="card">
+      <div class="label">Apostadores</div>
+      <div id="bettorsList"></div>
+      <div class="empty-state" id="bettorsEmpty">Ainda ninguém apostou.</div>
+      <div class="small-text">Apostas e resultado apagam-se sozinhos depois do dia da aposta.</div>
     </div>
-  </div>
-
-  <div class="card">
-    <div class="label">Configuração</div>
-    <div style="display:flex; gap:8px;">
-      <input type="text" id="settingsName" style="margin-bottom:0;" placeholder="alcunha">
-      <button id="saveNameBtn" style="background:#0e3a26; color:#f4ebd0; border:none; padding:10px 18px; font-family:'JetBrains Mono',monospace; font-size:0.7rem; letter-spacing:0.15em; cursor:pointer;">GUARDAR</button>
-    </div>
-    <div class="small-text">Discrição recomendada. Apostas e resultado apagam-se automaticamente à meia-noite.</div>
   </div>
 </div>
 
@@ -353,9 +386,13 @@ const JSONBIN_KEY = '$2a$10$xHyAJiB9NJkFYIoE3dRo8Op4qukI1qcstmOpV/oT2KN45cOcwFc5
 const API_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
 const POLL_INTERVAL = 5000;
 
-const todayStr = () => {
+const isoDate = (d) =>
+  `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const todayStr = () => isoDate(new Date());
+const tomorrowStr = () => {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  d.setDate(d.getDate() + 1);
+  return isoDate(d);
 };
 
 const prettyDate = (iso) => {
@@ -366,7 +403,7 @@ const prettyDate = (iso) => {
 };
 
 let state = {
-  date: todayStr(),
+  date: tomorrowStr(),
   bets: {},
   outcome: null,
   colleagueName: 'A Convidada Especial',
@@ -383,10 +420,11 @@ async function fetchState() {
     if (!res.ok) throw new Error('fetch falhou');
     const data = await res.json();
     const remote = data.record;
-    // Reset diário automático
-    if (remote.date !== todayStr()) {
+    // Reset automático: o "dia da aposta" (state.date) é amanhã quando se aposta,
+    // e hoje no próprio dia do evento. Quando passa para o passado, começa ronda nova.
+    if (!remote.date || remote.date < todayStr()) {
       const fresh = {
-        date: todayStr(),
+        date: tomorrowStr(),
         bets: {},
         outcome: null,
         colleagueName: remote.colleagueName || 'A Convidada Especial',
@@ -444,7 +482,6 @@ function render() {
   document.getElementById('subjectBtn').textContent = state.colleagueName;
   document.getElementById('estYear').textContent = `EST. ${new Date().getFullYear()}`;
   document.getElementById('ticker').textContent = `★ CASA DE APOSTAS INTERNA ★ ${state.colleagueName.toUpperCase()} ★ COTAÇÃO AO MINUTO ★ APOSTE COM RESPONSABILIDADE ★`;
-  document.getElementById('settingsName').value = state.colleagueName;
 
   if (lastSync) {
     const secs = Math.round((new Date() - lastSync) / 1000);
@@ -457,6 +494,7 @@ function render() {
   const simPct = total ? Math.round((simCount/total)*100) : 50;
 
   document.getElementById('betCount').textContent = `${total} ${total === 1 ? 'aposta' : 'apostas'}`;
+  document.getElementById('tabCount').textContent = total > 0 ? ` (${total})` : '';
   document.getElementById('oddsSim').style.width = `${simPct}%`;
   document.getElementById('simLabel').textContent = simPct >= 15 ? `${simPct}% FALTA` : '';
   document.getElementById('naoLabel').textContent = (100 - simPct) >= 15 && total > 0 ? `VEM ${100 - simPct}%` : '';
@@ -480,11 +518,15 @@ function render() {
     document.getElementById('judgeCard').classList.toggle('hidden', total === 0);
   }
 
-  const bettorsCard = document.getElementById('bettorsCard');
-  if (total > 0) {
-    bettorsCard.classList.remove('hidden');
+  const listEl = document.getElementById('bettorsList');
+  const emptyEl = document.getElementById('bettorsEmpty');
+  if (total === 0) {
+    listEl.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+  } else {
+    emptyEl.classList.add('hidden');
     const winningVote = state.outcome === 'faltou' ? 'sim' : state.outcome === 'veio' ? 'nao' : null;
-    document.getElementById('bettorsList').innerHTML = Object.entries(bets).map(([name, vote]) => {
+    listEl.innerHTML = Object.entries(bets).map(([name, vote]) => {
       let cls = '';
       if (winningVote) cls = vote === winningVote ? 'winner' : 'loser';
       return `
@@ -494,11 +536,8 @@ function render() {
         </div>
       `;
     }).join('');
-  } else {
-    bettorsCard.classList.add('hidden');
   }
 
-  // Pre-fill name
   if (myName && !document.getElementById('nameInput').value) {
     document.getElementById('nameInput').value = myName;
     document.getElementById('voteSim').disabled = false;
@@ -528,12 +567,19 @@ async function undoOutcome() {
   await pushState();
 }
 
-async function saveColleagueName() {
-  const v = document.getElementById('settingsName').value.trim();
-  if (!v) return;
-  state.colleagueName = v;
+async function promptColleagueName() {
+  const v = prompt('Sobre quem é a aposta?', state.colleagueName);
+  if (v === null) return;
+  const trimmed = v.trim();
+  if (!trimmed) return;
+  state.colleagueName = trimmed;
   render();
   await pushState();
+}
+
+function setTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${tab}`));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -556,10 +602,10 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('undoBtn').addEventListener('click', undoOutcome);
-  document.getElementById('saveNameBtn').addEventListener('click', saveColleagueName);
-  document.getElementById('subjectBtn').addEventListener('click', () => {
-    document.getElementById('settingsName').focus();
-    document.getElementById('settingsName').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('subjectBtn').addEventListener('click', promptColleagueName);
+
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTab(btn.dataset.tab));
   });
 
   fetchState();

@@ -125,13 +125,18 @@
     padding: 22px 12px;
     border: 2px solid #1a1a1a;
     cursor: pointer;
-    transition: transform 0.2s, opacity 0.2s;
+    transition: transform 0.2s, opacity 0.2s, outline-offset 0.2s;
     color: #f4ebd0;
     font-family: 'Karla', sans-serif;
   }
   .vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .vote-btn:not(:disabled):hover { transform: translateY(-3px) rotate(-1deg); }
   .vote-btn:active { transform: translateY(0); }
+  .vote-btn.bet-selected {
+    outline: 3px solid #1a1a1a;
+    outline-offset: 3px;
+  }
+  .vote-btn.bet-faded { opacity: 0.35; }
   .vote-btn .small {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
@@ -145,13 +150,52 @@
   }
   .vote-sim { background: #8b1e2d; }
   .vote-nao { background: #0e3a26; }
+  .reason-area {
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px dashed #1a1a1a;
+  }
+  .reason-area .label { color: #8b1e2d; margin-bottom: 8px; }
+  .reason-actions {
+    display: flex; gap: 8px;
+    align-items: center; justify-content: space-between;
+  }
+  .confirm-btn {
+    background: #0e3a26;
+    color: #f4ebd0;
+    border: none;
+    padding: 12px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cancel-link {
+    background: none; border: none; padding: 4px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    opacity: 0.6;
+    text-decoration: underline;
+    cursor: pointer;
+    color: inherit;
+  }
+  .cancel-link:hover { opacity: 1; }
+  .bet-item { border-bottom: 1px solid rgba(0,0,0,0.1); }
+  .bet-item.winner { background: rgba(14,58,38,0.08); }
+  .bet-item.loser { opacity: 0.5; }
   .bet-row {
     display: flex; justify-content: space-between; align-items: center;
     padding: 10px 12px;
-    border-bottom: 1px solid rgba(0,0,0,0.1);
   }
-  .bet-row.winner { background: rgba(14,58,38,0.08); padding-left: 8px; }
-  .bet-row.loser { opacity: 0.5; }
+  .bet-reason {
+    font-style: italic;
+    font-size: 0.85rem;
+    padding: 0 12px 10px;
+    opacity: 0.75;
+  }
+  .bet-reason::before { content: '✎ '; opacity: 0.5; }
   .bet-pill {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
@@ -278,6 +322,36 @@
     font-size: 0.85rem;
     opacity: 0.6;
   }
+  .admin-actions {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed rgba(0,0,0,0.2);
+    display: none;
+  }
+  body.is-admin .admin-actions { display: block; }
+  .admin-link {
+    background: none; border: none; padding: 0;
+    color: #8b1e2d;
+    text-decoration: underline;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .admin-link:hover { opacity: 0.7; }
+  .admin-badge {
+    display: none;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    color: #8b1e2d;
+    border: 1px solid #8b1e2d;
+    padding: 2px 6px;
+    margin-left: 8px;
+    text-transform: uppercase;
+  }
+  body.is-admin .admin-badge { display: inline-block; }
   @media (max-width: 500px) {
     .vote-btn .big { font-size: 1.8rem; }
   }
@@ -294,7 +368,7 @@
 <div class="header">
   <div class="header-row">
     <div>
-      <div class="live">● <span class="live-dot">EM DIRETO</span> · <span id="date"></span></div>
+      <div class="live">● <span class="live-dot">EM DIRETO</span> · <span id="date"></span><span class="admin-badge">ADMIN</span></div>
       <h1>Vem ou<br>não vem?</h1>
       <div class="subject">
         <span>Aposta para amanhã sobre</span>
@@ -340,6 +414,15 @@
           <div class="small">vai aparecer</div>
         </button>
       </div>
+
+      <div class="reason-area hidden" id="reasonArea">
+        <div class="label">● Porquê achas que falta?</div>
+        <input type="text" id="reasonInput" placeholder="ex.: ouvi que se atrasou no aeroporto">
+        <div class="reason-actions">
+          <button class="cancel-link" id="cancelBetBtn">cancelar</button>
+          <button class="confirm-btn" id="confirmBetBtn" disabled>Confirmar aposta</button>
+        </div>
+      </div>
     </div>
 
     <div class="card outcome-card hidden" id="outcomeCard">
@@ -364,6 +447,9 @@
       <div id="bettorsList"></div>
       <div class="empty-state" id="bettorsEmpty">Ainda ninguém apostou.</div>
       <div class="small-text">Apostas e resultado apagam-se sozinhos depois do dia da aposta.</div>
+      <div class="admin-actions">
+        <button class="admin-link" id="resetRoundBtn">→ começar ronda nova</button>
+      </div>
     </div>
   </div>
 </div>
@@ -402,6 +488,10 @@ const prettyDate = (iso) => {
   return `${d} ${months[parseInt(m)-1]} ${y}`;
 };
 
+// Bet shape: { vote: 'sim'|'nao', reason?: string }. Old format was a bare string — getVote/getReason normalize.
+const getVote = (b) => (typeof b === 'string' ? b : b && b.vote);
+const getReason = (b) => (typeof b === 'string' ? null : (b && b.reason) || null);
+
 let state = {
   date: tomorrowStr(),
   bets: {},
@@ -420,9 +510,6 @@ async function fetchState() {
     if (!res.ok) throw new Error('fetch falhou');
     const data = await res.json();
     const remote = data.record;
-    // Reset automático: o "dia da aposta" (state.date) é amanhã quando se aposta,
-    // e hoje no próprio dia do evento. Quando passa para o passado, começa ronda nova.
-    // Também reseta se a ronda está vazia e desatualizada (ex.: bin estagnado de versão antiga).
     const hasActivity = (remote.bets && Object.keys(remote.bets).length > 0) || remote.outcome;
     const stale = !remote.date || remote.date < todayStr() || (!hasActivity && remote.date !== tomorrowStr());
     if (stale) {
@@ -493,7 +580,7 @@ function render() {
 
   const bets = state.bets || {};
   const total = Object.keys(bets).length;
-  const simCount = Object.values(bets).filter(v => v === 'sim').length;
+  const simCount = Object.values(bets).filter(b => getVote(b) === 'sim').length;
   const simPct = total ? Math.round((simCount/total)*100) : 50;
 
   document.getElementById('betCount').textContent = `${total} ${total === 1 ? 'aposta' : 'apostas'}`;
@@ -511,7 +598,7 @@ function render() {
     oc.className = `card outcome-card ${state.outcome}`;
     document.getElementById('outcomeText').textContent = state.outcome === 'faltou' ? 'FALTOU.' : 'VEIO.';
     const winningVote = state.outcome === 'faltou' ? 'sim' : 'nao';
-    const winners = Object.entries(bets).filter(([_,v]) => v === winningVote).map(([n]) => n);
+    const winners = Object.entries(bets).filter(([_,b]) => getVote(b) === winningVote).map(([n]) => n);
     document.getElementById('winnersText').textContent = winners.length > 0
       ? `Vencedores: ${winners.join(', ')}`
       : 'Ninguém acertou. A casa fica com tudo.';
@@ -529,13 +616,19 @@ function render() {
   } else {
     emptyEl.classList.add('hidden');
     const winningVote = state.outcome === 'faltou' ? 'sim' : state.outcome === 'veio' ? 'nao' : null;
-    listEl.innerHTML = Object.entries(bets).map(([name, vote]) => {
+    listEl.innerHTML = Object.entries(bets).map(([name, bet]) => {
+      const vote = getVote(bet);
+      const reason = getReason(bet);
       let cls = '';
       if (winningVote) cls = vote === winningVote ? 'winner' : 'loser';
+      const mark = winningVote && vote === winningVote ? '✓ ' : '';
       return `
-        <div class="bet-row ${cls}">
-          <span style="font-weight:500;">${winningVote && vote === winningVote ? '✓ ' : ''}${escapeHtml(name)}</span>
-          <span class="bet-pill ${vote === 'sim' ? 'pill-sim' : 'pill-nao'}">${vote === 'sim' ? 'FALTA' : 'VEM'}</span>
+        <div class="bet-item ${cls}">
+          <div class="bet-row">
+            <span style="font-weight:500;">${mark}${escapeHtml(name)}</span>
+            <span class="bet-pill ${vote === 'sim' ? 'pill-sim' : 'pill-nao'}">${vote === 'sim' ? 'FALTA' : 'VEM'}</span>
+          </div>
+          ${reason ? `<div class="bet-reason">${escapeHtml(reason)}</div>` : ''}
         </div>
       `;
     }).join('');
@@ -548,12 +641,28 @@ function render() {
   }
 }
 
-async function placeBet(vote) {
+function showReasonArea() {
+  document.getElementById('reasonArea').classList.remove('hidden');
+  document.getElementById('voteSim').classList.add('bet-selected');
+  document.getElementById('voteNao').classList.add('bet-faded');
+  setTimeout(() => document.getElementById('reasonInput').focus(), 50);
+}
+
+function hideReasonArea() {
+  document.getElementById('reasonArea').classList.add('hidden');
+  document.getElementById('reasonInput').value = '';
+  document.getElementById('confirmBetBtn').disabled = true;
+  document.getElementById('voteSim').classList.remove('bet-selected');
+  document.getElementById('voteNao').classList.remove('bet-faded');
+}
+
+async function placeBet(vote, reason) {
   const name = document.getElementById('nameInput').value.trim();
   if (!name || state.outcome) return;
   myName = name;
   localStorage.setItem('myName', name);
-  state.bets[name] = vote;
+  state.bets[name] = reason ? { vote, reason } : { vote };
+  hideReasonArea();
   render();
   await pushState();
 }
@@ -580,9 +689,31 @@ async function promptColleagueName() {
   await pushState();
 }
 
+async function resetRound() {
+  if (!confirm('Começar uma ronda nova? Isto apaga apostas, motivos e resultado.')) return;
+  state.bets = {};
+  state.outcome = null;
+  state.date = tomorrowStr();
+  render();
+  await pushState();
+}
+
 function setTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
   document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === `tab-${tab}`));
+}
+
+function applyAdminFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const v = params.get('admin');
+  if (v === 'on') {
+    localStorage.setItem('isAdmin', 'true');
+    window.history.replaceState({}, '', window.location.pathname);
+  } else if (v === 'off') {
+    localStorage.removeItem('isAdmin');
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+  document.body.classList.toggle('is-admin', localStorage.getItem('isAdmin') === 'true');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -591,14 +722,35 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
+  applyAdminFromUrl();
+
   document.getElementById('nameInput').addEventListener('input', (e) => {
     const has = !!e.target.value.trim();
     document.getElementById('voteSim').disabled = !has;
     document.getElementById('voteNao').disabled = !has;
   });
 
-  document.getElementById('voteSim').addEventListener('click', () => placeBet('sim'));
-  document.getElementById('voteNao').addEventListener('click', () => placeBet('nao'));
+  document.getElementById('voteSim').addEventListener('click', () => {
+    if (!document.getElementById('nameInput').value.trim()) return;
+    showReasonArea();
+  });
+  document.getElementById('voteNao').addEventListener('click', () => {
+    hideReasonArea();
+    placeBet('nao');
+  });
+
+  document.getElementById('reasonInput').addEventListener('input', (e) => {
+    document.getElementById('confirmBetBtn').disabled = !e.target.value.trim();
+  });
+  document.getElementById('reasonInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.target.value.trim()) placeBet('sim', e.target.value.trim());
+  });
+  document.getElementById('confirmBetBtn').addEventListener('click', () => {
+    const reason = document.getElementById('reasonInput').value.trim();
+    if (!reason) return;
+    placeBet('sim', reason);
+  });
+  document.getElementById('cancelBetBtn').addEventListener('click', hideReasonArea);
 
   document.querySelectorAll('.judge-btn').forEach(btn => {
     btn.addEventListener('click', () => setOutcome(btn.dataset.outcome));
@@ -606,6 +758,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('undoBtn').addEventListener('click', undoOutcome);
   document.getElementById('subjectBtn').addEventListener('click', promptColleagueName);
+  document.getElementById('resetRoundBtn').addEventListener('click', resetRound);
 
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => setTab(btn.dataset.tab));

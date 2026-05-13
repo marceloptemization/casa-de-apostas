@@ -6,24 +6,61 @@
 <title>Casa de Apostas</title>
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Karla:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
+  :root {
+    --bg: #07021a;
+    --bg-card: #14082a;
+    --bg-card-alt: #0e0521;
+    --neon-pink: #ff006e;
+    --neon-green: #39ff14;
+    --neon-gold: #ffd60a;
+    --neon-cyan: #00f0ff;
+    --neon-violet: #b14cff;
+    --text: #ffffff;
+    --text-dim: rgba(255, 255, 255, 0.72);
+  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    background: #f4ebd0;
+    background: var(--bg);
     background-image:
-      radial-gradient(circle at 20% 30%, rgba(14,58,38,0.04) 0%, transparent 50%),
-      radial-gradient(circle at 80% 70%, rgba(139,30,45,0.04) 0%, transparent 50%);
+      radial-gradient(circle at 18% 22%, rgba(255, 0, 110, 0.22) 0%, transparent 45%),
+      radial-gradient(circle at 82% 78%, rgba(57, 255, 20, 0.16) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.10) 0%, transparent 60%),
+      radial-gradient(circle at 70% 20%, rgba(255, 214, 10, 0.10) 0%, transparent 40%);
+    background-attachment: fixed;
     font-family: 'Karla', sans-serif;
-    color: #1a1a1a;
+    color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden;
   }
+  @keyframes ambientShift {
+    0%, 100% { filter: hue-rotate(0deg); }
+    50%      { filter: hue-rotate(15deg); }
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(circle at 30% 60%, rgba(177, 76, 255, 0.18) 0%, transparent 50%),
+      radial-gradient(circle at 70% 30%, rgba(0, 240, 255, 0.10) 0%, transparent 50%);
+    pointer-events: none;
+    animation: ambientShift 12s ease-in-out infinite;
+    z-index: 0;
+  }
+  body > * { position: relative; z-index: 1; }
+
   .ticker {
-    background: #0e3a26;
-    color: #f4ebd0;
-    padding: 6px 0;
+    background: #000;
+    color: var(--neon-green);
+    padding: 8px 0;
     overflow: hidden;
     white-space: nowrap;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
+    text-shadow: 0 0 6px var(--neon-green), 0 0 12px rgba(57, 255, 20, 0.6);
+    border-top: 1px solid var(--neon-green);
+    border-bottom: 1px solid var(--neon-green);
+    box-shadow: 0 0 22px rgba(57, 255, 20, 0.5), inset 0 0 25px rgba(57, 255, 20, 0.08);
+    letter-spacing: 0.2em;
   }
   .ticker-content {
     display: inline-block;
@@ -31,258 +68,432 @@
     animation: scroll 30s linear infinite;
   }
   @keyframes scroll {
-    0% { transform: translateX(0); }
+    0%   { transform: translateX(0); }
     100% { transform: translateX(-100%); }
   }
+
   .container { max-width: 800px; margin: 0 auto; padding: 0 16px; }
-  .header { padding: 24px 16px 12px; max-width: 800px; margin: 0 auto; }
+  .header { padding: 28px 16px 12px; max-width: 800px; margin: 0 auto; }
+  .header-row {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; flex-wrap: wrap; gap: 16px;
+  }
+
   .live {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    color: #8b1e2d;
+    letter-spacing: 0.2em;
+    color: var(--neon-pink);
+    text-shadow: 0 0 8px var(--neon-pink);
+    display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap;
   }
-  .live-dot { animation: pulse 1.5s ease-in-out infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .live-dot {
+    width: 10px; height: 10px;
+    background: var(--neon-pink);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
+    animation: livePulse 1.3s ease-in-out infinite;
+    display: inline-block;
+  }
+  @keyframes livePulse {
+    0%, 100% { box-shadow: 0 0 8px var(--neon-pink), 0 0 16px var(--neon-pink); opacity: 1; }
+    50%      { box-shadow: 0 0 16px var(--neon-pink), 0 0 32px var(--neon-pink), 0 0 48px var(--neon-pink); opacity: 0.7; }
+  }
+
   h1 {
     font-family: 'Abril Fatface', serif;
-    font-size: clamp(2.5rem, 9vw, 4.5rem);
+    font-size: clamp(2.8rem, 10vw, 5rem);
     line-height: 0.95;
-    margin: 8px 0 16px;
+    margin: 12px 0 16px;
+    color: var(--neon-gold);
+    text-shadow:
+      0 0 8px var(--neon-gold),
+      0 0 20px var(--neon-gold),
+      0 0 36px var(--neon-pink),
+      0 0 60px var(--neon-pink);
+    animation: titleFlicker 4s linear infinite;
   }
+  @keyframes titleFlicker {
+    0%, 88%, 92%, 96%, 100% { opacity: 1; }
+    89%, 91% { opacity: 0.85; }
+    93%      { opacity: 0.95; }
+  }
+
   .sync-status {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
-    letter-spacing: 0.1em;
-    opacity: 0.5;
-    margin-top: 4px;
+    letter-spacing: 0.15em;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 6px rgba(0, 240, 255, 0.6);
+    opacity: 0.85;
+    margin-top: 6px;
   }
+
   .card {
-    background: #fefdf5;
-    border: 1px solid #1a1a1a;
-    box-shadow: 4px 4px 0 #1a1a1a;
-    padding: 20px;
-    margin-bottom: 20px;
+    background: var(--bg-card);
+    border: 1px solid var(--neon-pink);
+    box-shadow:
+      0 0 12px rgba(255, 0, 110, 0.55),
+      0 0 30px rgba(255, 0, 110, 0.18),
+      inset 0 0 30px rgba(255, 0, 110, 0.05);
+    padding: 22px;
+    margin-bottom: 22px;
+    color: var(--text);
+    position: relative;
   }
+
   .label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    color: var(--neon-gold);
+    text-shadow: 0 0 6px rgba(255, 214, 10, 0.7);
   }
+
   @property --sim {
     syntax: '<percentage>';
     inherits: false;
     initial-value: 50%;
   }
   .odds-bar {
-    height: 48px;
-    margin-top: 12px;
+    height: 50px;
+    margin-top: 14px;
     position: relative;
-    background: linear-gradient(to right, #8b1e2d 0%, #8b1e2d var(--sim, 50%), #0e3a26 var(--sim, 50%), #0e3a26 100%);
+    background: linear-gradient(to right,
+      var(--neon-pink) 0%, var(--neon-pink) var(--sim, 50%),
+      var(--neon-green) var(--sim, 50%), var(--neon-green) 100%);
     transition: --sim 0.5s ease;
     overflow: hidden;
+    border: 2px solid var(--neon-gold);
+    box-shadow:
+      0 0 18px rgba(255, 214, 10, 0.6),
+      0 0 14px rgba(255, 0, 110, 0.5),
+      0 0 14px rgba(57, 255, 20, 0.5);
   }
   .odds-text {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
-    color: #f4ebd0;
+    color: #000;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
+    letter-spacing: 0.1em;
+    text-shadow: 0 0 2px rgba(255,255,255,0.4);
   }
-  .odds-text-sim { left: 12px; }
-  .odds-text-nao { right: 12px; }
+  .odds-text-sim { left: 14px; }
+  .odds-text-nao { right: 14px; }
+
   input[type=text] {
     width: 100%;
-    padding: 12px 14px;
-    border: 2px solid #1a1a1a;
-    background: transparent;
-    font-family: 'Karla', sans-serif;
+    padding: 14px 16px;
+    border: 2px solid var(--neon-cyan);
+    background: #000;
+    color: var(--neon-cyan);
+    font-family: 'JetBrains Mono', monospace;
     font-size: 1rem;
     margin-bottom: 16px;
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4), inset 0 0 8px rgba(0, 240, 255, 0.08);
+    letter-spacing: 0.05em;
   }
-  input:focus { outline: none; box-shadow: 2px 2px 0 #1a1a1a; }
+  input[type=text]::placeholder { color: rgba(0, 240, 255, 0.45); }
+  input:focus {
+    outline: none;
+    box-shadow: 0 0 18px var(--neon-cyan), 0 0 30px rgba(0, 240, 255, 0.55), inset 0 0 10px rgba(0, 240, 255, 0.15);
+  }
+
   .vote-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
   }
   .vote-btn {
-    padding: 22px 12px;
-    border: 2px solid #1a1a1a;
+    padding: 26px 12px;
+    border: 2px solid transparent;
     cursor: pointer;
-    transition: transform 0.2s, opacity 0.2s, outline-offset 0.2s;
-    color: #f4ebd0;
+    transition: transform 0.18s, opacity 0.2s, box-shadow 0.2s;
+    color: #fff;
     font-family: 'Karla', sans-serif;
+    background: #000;
+    position: relative;
   }
-  .vote-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .vote-btn:not(:disabled):hover { transform: translateY(-3px) rotate(-1deg); }
+  .vote-sim {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 14px var(--neon-pink), 0 0 32px rgba(255, 0, 110, 0.5), inset 0 0 24px rgba(255, 0, 110, 0.12);
+  }
+  .vote-nao {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 14px var(--neon-green), 0 0 32px rgba(57, 255, 20, 0.5), inset 0 0 24px rgba(57, 255, 20, 0.12);
+  }
+  .vote-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+  .vote-sim:not(:disabled):hover {
+    transform: translateY(-3px) rotate(-1deg);
+    box-shadow: 0 0 24px var(--neon-pink), 0 0 50px rgba(255, 0, 110, 0.7), inset 0 0 30px rgba(255, 0, 110, 0.2);
+  }
+  .vote-nao:not(:disabled):hover {
+    transform: translateY(-3px) rotate(1deg);
+    box-shadow: 0 0 24px var(--neon-green), 0 0 50px rgba(57, 255, 20, 0.7), inset 0 0 30px rgba(57, 255, 20, 0.2);
+  }
   .vote-btn:active { transform: translateY(0); }
   .vote-btn.bet-selected {
-    outline: 3px solid #1a1a1a;
-    outline-offset: 3px;
+    outline: 3px dashed var(--neon-gold);
+    outline-offset: 4px;
+    animation: selectedPulse 1.2s ease-in-out infinite;
   }
-  .vote-btn.bet-faded { opacity: 0.35; }
+  @keyframes selectedPulse {
+    0%, 100% { outline-color: var(--neon-gold); }
+    50%      { outline-color: var(--neon-pink); }
+  }
+  .vote-btn.bet-faded { opacity: 0.3; }
   .vote-btn .small {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    opacity: 0.8;
+    letter-spacing: 0.18em;
+    opacity: 0.85;
   }
   .vote-btn .big {
     font-family: 'Abril Fatface', serif;
-    font-size: 2.2rem;
-    margin: 4px 0;
+    font-size: 2.5rem;
+    margin: 6px 0;
   }
-  .vote-sim { background: #8b1e2d; }
-  .vote-nao { background: #0e3a26; }
+  .vote-sim .big {
+    color: var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink), 0 0 22px var(--neon-pink), 0 0 36px var(--neon-pink);
+  }
+  .vote-nao .big {
+    color: var(--neon-green);
+    text-shadow: 0 0 10px var(--neon-green), 0 0 22px var(--neon-green), 0 0 36px var(--neon-green);
+  }
+
   .reason-area {
-    margin-top: 18px;
-    padding-top: 18px;
-    border-top: 1px dashed #1a1a1a;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px dashed var(--neon-pink);
   }
-  .reason-area .label { color: #8b1e2d; margin-bottom: 8px; }
+  .reason-area .label { color: var(--neon-pink); text-shadow: 0 0 8px var(--neon-pink); margin-bottom: 8px; }
+  .reason-area input[type=text] {
+    border-color: var(--neon-pink);
+    color: var(--neon-pink);
+    box-shadow: 0 0 10px rgba(255, 0, 110, 0.4), inset 0 0 8px rgba(255, 0, 110, 0.08);
+  }
+  .reason-area input[type=text]::placeholder { color: rgba(255, 0, 110, 0.5); }
+  .reason-area input[type=text]:focus {
+    box-shadow: 0 0 18px var(--neon-pink), 0 0 30px rgba(255, 0, 110, 0.5);
+  }
   .reason-actions {
     display: flex; gap: 8px;
     align-items: center; justify-content: space-between;
   }
   .confirm-btn {
-    background: #0e3a26;
-    color: #f4ebd0;
+    background: var(--neon-green);
+    color: #000;
     border: none;
-    padding: 12px 18px;
+    padding: 14px 22px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     letter-spacing: 0.15em;
     text-transform: uppercase;
     cursor: pointer;
+    font-weight: 700;
+    box-shadow: 0 0 14px var(--neon-green), 0 0 28px rgba(57, 255, 20, 0.5);
   }
-  .confirm-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .confirm-btn:hover {
+    box-shadow: 0 0 22px var(--neon-green), 0 0 44px rgba(57, 255, 20, 0.7);
+  }
+  .confirm-btn:disabled {
+    opacity: 0.4; cursor: not-allowed; box-shadow: none;
+    background: #555; color: #aaa;
+  }
   .cancel-link {
     background: none; border: none; padding: 4px 0;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
-    opacity: 0.6;
+    color: var(--text-dim);
     text-decoration: underline;
     cursor: pointer;
-    color: inherit;
   }
-  .cancel-link:hover { opacity: 1; }
-  .bet-item { border-bottom: 1px solid rgba(0,0,0,0.1); }
-  .bet-item.winner { background: rgba(14,58,38,0.08); }
-  .bet-item.loser { opacity: 0.5; }
+  .cancel-link:hover { color: var(--text); }
+
+  .bet-item {
+    border-bottom: 1px solid rgba(255, 214, 10, 0.18);
+  }
+  .bet-item.winner {
+    background: rgba(57, 255, 20, 0.12);
+    box-shadow: inset 0 0 18px rgba(57, 255, 20, 0.18);
+  }
+  .bet-item.loser { opacity: 0.4; }
   .bet-row {
     display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 12px;
+    padding: 12px;
+    color: var(--text);
   }
   .bet-reason {
     font-style: italic;
     font-size: 0.85rem;
     padding: 0 12px 10px;
-    opacity: 0.75;
+    color: var(--text-dim);
   }
-  .bet-reason::before { content: '✎ '; opacity: 0.5; }
+  .bet-reason::before { content: '✎ '; color: var(--neon-gold); opacity: 0.7; }
   .bet-pill {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
     font-weight: 700;
-    padding: 4px 8px;
-    color: #f4ebd0;
+    padding: 5px 9px;
+    color: #000;
+    letter-spacing: 0.1em;
   }
-  .pill-sim { background: #8b1e2d; }
-  .pill-nao { background: #0e3a26; }
+  .pill-sim {
+    background: var(--neon-pink);
+    box-shadow: 0 0 8px var(--neon-pink);
+  }
+  .pill-nao {
+    background: var(--neon-green);
+    box-shadow: 0 0 8px var(--neon-green);
+  }
+
   .outcome-card {
-    color: #f4ebd0;
-    padding: 28px 22px;
+    color: #fff;
+    padding: 32px 24px;
     transition: background 0.3s ease;
+    text-align: center;
   }
-  .outcome-card.faltou { background: #8b1e2d; }
-  .outcome-card.veio { background: #0e3a26; }
+  .outcome-card.faltou {
+    background: radial-gradient(circle at 30% 30%, #ff006e 0%, #5b0029 80%);
+    border-color: var(--neon-pink);
+    box-shadow:
+      0 0 30px var(--neon-pink),
+      0 0 70px rgba(255, 0, 110, 0.6),
+      inset 0 0 40px rgba(255, 0, 110, 0.2);
+    animation: winningGlow 1.5s ease-in-out infinite;
+  }
+  .outcome-card.veio {
+    background: radial-gradient(circle at 30% 30%, #39ff14 0%, #0a3f00 80%);
+    border-color: var(--neon-green);
+    box-shadow:
+      0 0 30px var(--neon-green),
+      0 0 70px rgba(57, 255, 20, 0.6),
+      inset 0 0 40px rgba(57, 255, 20, 0.2);
+    animation: winningGlow 1.5s ease-in-out infinite;
+  }
+  @keyframes winningGlow {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.15); }
+  }
   .outcome-card .big {
     font-family: 'Abril Fatface', serif;
-    font-size: 4rem;
+    font-size: 4.5rem;
     line-height: 1;
-    margin: 8px 0 16px;
+    margin: 10px 0 18px;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px currentColor;
   }
   .outcome-card.is-spinning {
-    background: #1a1a1a;
+    background: #000;
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 30px var(--neon-gold), 0 0 60px rgba(255, 214, 10, 0.6), inset 0 0 40px rgba(255, 214, 10, 0.15);
     transition: none;
+    animation: spinFlicker 0.12s linear infinite;
+  }
+  @keyframes spinFlicker {
+    0%, 100% { filter: brightness(1); }
+    50%      { filter: brightness(1.3); }
   }
   .outcome-card.is-spinning .big {
     animation: spinShake 0.06s linear infinite;
+    color: var(--neon-gold);
+    text-shadow: 0 0 14px var(--neon-gold), 0 0 28px var(--neon-gold), 0 0 50px var(--neon-pink);
   }
   @keyframes spinShake {
-    0%   { transform: translateX(-2px) skewX(-1deg); }
-    50%  { transform: translateX(2px) skewX(1deg); }
-    100% { transform: translateX(-2px) skewX(-1deg); }
+    0%   { transform: translateX(-3px) skewX(-2deg); }
+    50%  { transform: translateX(3px) skewX(2deg); }
+    100% { transform: translateX(-3px) skewX(-2deg); }
   }
-  .outcome-card.pop { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .outcome-card.pop { animation: popIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1), winningGlow 1.5s ease-in-out infinite 0.55s; }
   @keyframes popIn {
-    0%   { transform: scale(0.9); opacity: 0; }
-    60%  { transform: scale(1.04); opacity: 1; }
+    0%   { transform: scale(0.85); opacity: 0; }
+    60%  { transform: scale(1.06); opacity: 1; }
     100% { transform: scale(1); }
   }
+
   .judge-card {
-    background: #1a1a1a; color: #f4ebd0;
-    padding: 20px;
+    background: #000;
+    color: #fff;
+    padding: 22px;
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 16px var(--neon-gold), 0 0 32px rgba(255, 214, 10, 0.45);
   }
+  .judge-card .label { color: var(--neon-gold); }
   .judge-btns {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
     margin-top: 12px;
   }
   .judge-btn {
-    padding: 14px;
+    padding: 18px;
     background: transparent;
-    border: 1px solid #f4ebd0;
-    color: #f4ebd0;
+    border: 2px solid var(--neon-gold);
+    color: var(--neon-gold);
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
+    font-size: 0.85rem;
+    letter-spacing: 0.2em;
     cursor: pointer;
+    font-weight: 700;
+    text-shadow: 0 0 6px var(--neon-gold);
+    box-shadow: inset 0 0 14px rgba(255, 214, 10, 0.15);
+    transition: all 0.2s;
   }
-  .judge-btn:hover { background: rgba(255,255,255,0.1); }
+  .judge-btn:hover {
+    background: var(--neon-gold);
+    color: #000;
+    text-shadow: none;
+    box-shadow: 0 0 22px var(--neon-gold), 0 0 44px rgba(255, 214, 10, 0.6);
+  }
   .judge-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
   .link-btn {
     background: none; border: none; padding: 0;
-    color: inherit; cursor: pointer;
+    color: var(--text-dim); cursor: pointer;
     text-decoration: underline;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    opacity: 0.7;
-    margin-top: 12px;
+    font-size: 0.72rem;
+    margin-top: 14px;
   }
-  .link-btn:hover { opacity: 1; }
+  .link-btn:hover { color: var(--neon-cyan); text-shadow: 0 0 6px var(--neon-cyan); }
   .small-text {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
-    opacity: 0.6;
-    margin-top: 8px;
+    color: var(--text-dim);
+    margin-top: 10px;
   }
   .hidden { display: none !important; }
+
   .stamp {
     display: inline-block;
-    padding: 4px 12px;
-    border: 2px solid #8b1e2d;
-    color: #8b1e2d;
+    padding: 6px 14px;
+    border: 2px solid var(--neon-pink);
+    color: var(--neon-pink);
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
     text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    transform: rotate(-2deg);
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    transform: rotate(-3deg);
+    text-shadow: 0 0 10px var(--neon-pink);
+    box-shadow: 0 0 14px rgba(255, 0, 110, 0.6), inset 0 0 14px rgba(255, 0, 110, 0.15);
+    animation: stampWobble 4s ease-in-out infinite;
   }
-  .header-row {
-    display: flex; justify-content: space-between;
-    align-items: flex-start; flex-wrap: wrap; gap: 16px;
+  @keyframes stampWobble {
+    0%, 100% { transform: rotate(-3deg); }
+    50%      { transform: rotate(-1deg) scale(1.04); }
   }
+
   footer {
-    border-top: 2px solid #1a1a1a;
-    background: #0e3a26;
-    color: #f4ebd0;
-    margin-top: 32px;
-    padding: 14px 0;
+    border-top: 2px solid var(--neon-green);
+    background: #000;
+    color: var(--neon-green);
+    margin-top: 36px;
+    padding: 16px 0;
+    box-shadow: 0 -4px 22px rgba(57, 255, 20, 0.4);
   }
   .footer-inner {
     max-width: 800px; margin: 0 auto;
@@ -290,83 +501,98 @@
     display: flex; justify-content: space-between;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
-    letter-spacing: 0.15em;
+    letter-spacing: 0.18em;
+    text-shadow: 0 0 6px var(--neon-green);
   }
+
   .error-banner {
-    background: #8b1e2d; color: #f4ebd0;
+    background: var(--neon-pink); color: #fff;
     padding: 10px 16px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
+    font-size: 0.78rem;
     text-align: center;
+    box-shadow: 0 0 18px var(--neon-pink);
   }
-  .tabs {
-    display: flex;
-    margin-bottom: 20px;
-  }
+
+  .tabs { display: flex; margin-bottom: 22px; }
   .tab-btn {
     flex: 1;
-    background: transparent;
-    border: 2px solid #1a1a1a;
-    padding: 12px;
+    background: #000;
+    border: 2px solid var(--neon-cyan);
+    padding: 14px;
     cursor: pointer;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.15em;
+    font-size: 0.78rem;
+    letter-spacing: 0.18em;
     text-transform: uppercase;
-    color: #1a1a1a;
+    color: var(--neon-cyan);
+    text-shadow: 0 0 8px var(--neon-cyan);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.35), inset 0 0 10px rgba(0, 240, 255, 0.08);
+    font-weight: 700;
   }
   .tab-btn + .tab-btn { border-left-width: 0; }
   .tab-btn.active {
-    background: #1a1a1a;
-    color: #f4ebd0;
+    background: var(--neon-cyan);
+    color: #000;
+    text-shadow: none;
+    box-shadow: 0 0 22px var(--neon-cyan), 0 0 44px rgba(0, 240, 255, 0.55);
   }
-  .tab-count { opacity: 0.7; margin-left: 6px; }
+  .tab-count { opacity: 0.85; margin-left: 6px; color: var(--neon-gold); }
+  .tab-btn.active .tab-count { color: #8b1e2d; }
   .tab-pane { display: none; }
   .tab-pane.active { display: block; }
+
   .empty-state {
     text-align: center;
-    padding: 24px 12px;
+    padding: 28px 12px;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    opacity: 0.6;
+    font-size: 0.88rem;
+    color: var(--text-dim);
   }
+
   .admin-actions {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px dashed rgba(0,0,0,0.2);
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px dashed rgba(255, 0, 110, 0.4);
     display: none;
   }
   body.is-admin .admin-actions { display: block; }
   .admin-link {
     background: none; border: none; padding: 0;
-    color: #8b1e2d;
+    color: var(--neon-pink);
     text-decoration: underline;
     font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    letter-spacing: 0.1em;
+    font-size: 0.78rem;
+    letter-spacing: 0.15em;
     cursor: pointer;
     text-transform: uppercase;
+    text-shadow: 0 0 8px var(--neon-pink);
   }
-  .admin-link:hover { opacity: 0.7; }
+  .admin-link:hover { color: var(--neon-gold); text-shadow: 0 0 10px var(--neon-gold); }
   .admin-badge {
     display: none;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.6rem;
-    letter-spacing: 0.15em;
-    color: #8b1e2d;
-    border: 1px solid #8b1e2d;
-    padding: 2px 6px;
-    margin-left: 8px;
+    letter-spacing: 0.18em;
+    color: var(--neon-gold);
+    border: 1px solid var(--neon-gold);
+    padding: 2px 8px;
+    margin-left: 10px;
     text-transform: uppercase;
+    text-shadow: 0 0 6px var(--neon-gold);
+    box-shadow: 0 0 10px rgba(255, 214, 10, 0.45);
   }
   body.is-admin .admin-badge { display: inline-block; }
+
   #confetti {
     position: fixed; inset: 0;
     pointer-events: none; z-index: 9999;
   }
+
   @media (max-width: 500px) {
-    .vote-btn .big { font-size: 1.8rem; }
-    .outcome-card .big { font-size: 3rem; }
+    .vote-btn .big { font-size: 2rem; }
+    .outcome-card .big { font-size: 3.2rem; }
+    h1 { font-size: clamp(2.4rem, 11vw, 4rem); }
   }
 </style>
 </head>
@@ -381,7 +607,7 @@
 <div class="header">
   <div class="header-row">
     <div>
-      <div class="live">● <span class="live-dot">EM DIRETO</span> · <span id="date"></span><span class="admin-badge">ADMIN</span></div>
+      <div class="live"><span class="live-dot"></span>EM DIRETO · <span id="date"></span><span class="admin-badge">ADMIN</span></div>
       <h1>Vem ou<br>não vem?</h1>
       <div class="sync-status" id="syncStatus">a sincronizar…</div>
     </div>
@@ -399,7 +625,7 @@
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:baseline;">
         <div class="label">Cotação ao minuto</div>
-        <div style="font-family:'JetBrains Mono',monospace; font-size:0.7rem;" id="betCount">0 apostas</div>
+        <div style="font-family:'JetBrains Mono',monospace; font-size:0.72rem; color: var(--neon-cyan); text-shadow: 0 0 6px var(--neon-cyan);" id="betCount">0 apostas</div>
       </div>
       <div class="odds-bar" id="oddsBar">
         <span class="odds-text odds-text-sim" id="simLabel"></span>
@@ -409,7 +635,7 @@
     </div>
 
     <div class="card" id="betCard">
-      <div class="label" style="color:#8b1e2d;">● Faz a tua aposta</div>
+      <div class="label" style="color: var(--neon-pink); text-shadow: 0 0 8px var(--neon-pink);">● Faz a tua aposta</div>
       <input type="text" id="nameInput" placeholder="O teu nome ou alcunha">
       <div class="vote-grid">
         <button class="vote-btn vote-sim" id="voteSim" disabled>
@@ -435,14 +661,14 @@
     </div>
 
     <div class="card outcome-card hidden" id="outcomeCard">
-      <div class="label" style="opacity:0.8;">Resultado oficial</div>
+      <div class="label" style="opacity:0.9;">Resultado oficial</div>
       <div class="big" id="outcomeText"></div>
-      <div style="font-family:'JetBrains Mono',monospace; font-size:0.9rem;" id="winnersText"></div>
+      <div style="font-family:'JetBrains Mono',monospace; font-size:0.95rem;" id="winnersText"></div>
       <button class="link-btn" id="undoBtn">desfazer resultado</button>
     </div>
 
     <div class="card judge-card hidden" id="judgeCard">
-      <div class="label" style="opacity:0.7;">Quando souberes, marca o resultado</div>
+      <div class="label">Quando souberes, marca o resultado</div>
       <div class="judge-btns">
         <button class="judge-btn" data-outcome="faltou">FALTOU</button>
         <button class="judge-btn" data-outcome="veio">VEIO</button>
@@ -501,11 +727,10 @@ const prettyDate = (iso) => {
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
-// Bet shape: { vote: 'sim'|'nao', reason?: string }. Old format was a bare string — getVote/getReason normalize.
 const getVote = (b) => (typeof b === 'string' ? b : b && b.vote);
 const getReason = (b) => (typeof b === 'string' ? null : (b && b.reason) || null);
 
-// ----- Audio (Web Audio API, no assets) -----
+// ----- Audio -----
 let audioCtx = null;
 function ctx() {
   if (!audioCtx) {
@@ -542,7 +767,6 @@ function playReveal() {
   tone(880, 0.4,  { type: 'triangle', volume: 0.3, when: 0.25 });
 }
 function playWinFanfare() {
-  // C major arpeggio
   [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.16, { type: 'triangle', volume: 0.28, when: i * 0.09 }));
   tone(1047, 0.55, { type: 'triangle', volume: 0.22, when: 0.45 });
 }
@@ -551,28 +775,32 @@ function playLoseSound() {
   tone(247, 0.3,  { type: 'sine', volume: 0.2, when: 0.16 });
 }
 
-// ----- Confetti -----
+// ----- Confetti (neon palette) -----
 function fireConfetti() {
   const canvas = document.getElementById('confetti');
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
   const cctx = canvas.getContext('2d');
-  const colors = ['#8b1e2d', '#0e3a26', '#f4ebd0', '#d4a040', '#1a1a1a'];
+  const colors = ['#ff006e', '#39ff14', '#ffd60a', '#00f0ff', '#b14cff', '#ffffff'];
   const particles = [];
   const origins = [
-    { x: canvas.width * 0.05, y: canvas.height * 0.75, dir: 1 },
-    { x: canvas.width * 0.95, y: canvas.height * 0.75, dir: -1 },
+    { x: canvas.width * 0.05, y: canvas.height * 0.78, dir: 1 },
+    { x: canvas.width * 0.95, y: canvas.height * 0.78, dir: -1 },
+    { x: canvas.width * 0.5,  y: canvas.height * 0.30, dir: 0 },
   ];
-  origins.forEach(o => {
-    for (let i = 0; i < 70; i++) {
+  origins.forEach((o, idx) => {
+    const count = idx === 2 ? 50 : 80;
+    for (let i = 0; i < count; i++) {
+      const angle = o.dir === 0 ? (Math.random() - 0.5) * Math.PI : 0;
       particles.push({
         x: o.x, y: o.y,
-        vx: o.dir * (Math.random() * 9 + 4),
-        vy: -Math.random() * 13 - 8,
+        vx: o.dir === 0 ? Math.sin(angle) * 6 : o.dir * (Math.random() * 10 + 5),
+        vy: o.dir === 0 ? -Math.random() * 6 - 2 : -Math.random() * 14 - 9,
         color: colors[Math.floor(Math.random() * colors.length)],
-        size: Math.random() * 7 + 4,
+        size: Math.random() * 8 + 5,
         rotation: Math.random() * Math.PI * 2,
-        rotationSpeed: (Math.random() - 0.5) * 0.4,
+        rotationSpeed: (Math.random() - 0.5) * 0.45,
+        glow: Math.random() > 0.5,
       });
     }
   });
@@ -589,11 +817,15 @@ function fireConfetti() {
       cctx.save();
       cctx.translate(p.x, p.y);
       cctx.rotate(p.rotation);
+      if (p.glow) {
+        cctx.shadowColor = p.color;
+        cctx.shadowBlur = 14;
+      }
       cctx.fillStyle = p.color;
       cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.55);
       cctx.restore();
     });
-    if (frames < 260) requestAnimationFrame(tick);
+    if (frames < 280) requestAnimationFrame(tick);
     else cctx.clearRect(0, 0, canvas.width, canvas.height);
   }
   tick();
@@ -608,8 +840,8 @@ let state = {
 let myName = localStorage.getItem('myName') || '';
 let lastSync = null;
 let isWriting = false;
-let isSpinning = false;          // admin-side reveal in progress; skip render-side celebration
-let previousOutcome = null;       // for transition detection
+let isSpinning = false;
+let previousOutcome = null;
 let firstRenderDone = false;
 
 async function fetchState() {
@@ -623,15 +855,9 @@ async function fetchState() {
     const hasActivity = (remote.bets && Object.keys(remote.bets).length > 0) || remote.outcome;
     const stale = !remote.date || remote.date < todayStr() || (!hasActivity && remote.date !== tomorrowStr());
     if (stale) {
-      const fresh = {
-        date: tomorrowStr(),
-        bets: {},
-        outcome: null,
-      };
-      state = fresh;
+      state = { date: tomorrowStr(), bets: {}, outcome: null };
       await pushState();
     } else if (!isSpinning) {
-      // Don't clobber local state while admin is mid-reveal — the local optimistic outcome isn't pushed yet.
       state = remote;
     }
     lastSync = new Date();
@@ -648,10 +874,7 @@ async function pushState() {
   try {
     const res = await fetch(API_URL, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN_KEY,
-      },
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
       body: JSON.stringify(state),
     });
     if (!res.ok) throw new Error('push falhou');
@@ -718,14 +941,12 @@ function render() {
     document.getElementById('judgeCard').classList.add('hidden');
     const wasHidden = oc.classList.contains('hidden');
     oc.classList.remove('hidden');
-    // Only set classes if not currently mid-spin (spin manages its own state)
     if (!isSpinning) {
       oc.className = `card outcome-card ${state.outcome}`;
       if (wasHidden && firstRenderDone) {
-        // Pop animation for non-admin viewers seeing the result for the first time
         void oc.offsetWidth;
         oc.classList.add('pop');
-        setTimeout(() => oc.classList.remove('pop'), 600);
+        setTimeout(() => oc.classList.remove('pop'), 700);
       }
     }
     document.getElementById('outcomeText').textContent = state.outcome === 'faltou' ? 'FALTOU.' : 'VEIO.';
@@ -773,7 +994,6 @@ function render() {
     document.getElementById('voteNao').disabled = false;
   }
 
-  // Outcome transition: fire celebration for non-admin viewers (admin gets it inside revealOutcomeWithSpin).
   if (!isSpinning && firstRenderDone && previousOutcome === null && state.outcome !== null) {
     celebrateOutcome();
   }
@@ -843,16 +1063,14 @@ async function revealOutcomeWithSpin(outcome) {
   isSpinning = false;
   document.querySelectorAll('.judge-btn').forEach(b => b.disabled = false);
 
-  // After committing, run celebration for the admin too (confetti or lose sound).
-  // previousOutcome is still null here, so the transition logic in render() would fire too — guard it:
   celebrateOutcome();
-  previousOutcome = state.outcome; // suppress double-fire from render
+  previousOutcome = state.outcome;
   render();
 }
 
 async function undoOutcome() {
   state.outcome = null;
-  previousOutcome = null; // allow re-celebration if it's set again
+  previousOutcome = null;
   render();
   await pushState();
 }
@@ -884,8 +1102,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   applyAdmin();
-
-  // Unlock audio context on first interaction (browser autoplay policy).
   document.addEventListener('click', () => ctx(), { once: true });
 
   document.getElementById('nameInput').addEventListener('input', (e) => {

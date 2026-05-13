@@ -50,23 +50,6 @@
     line-height: 0.95;
     margin: 8px 0 16px;
   }
-  .subject {
-    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-    font-size: 1rem;
-  }
-  .subject-name {
-    font-family: 'Abril Fatface', serif;
-    font-size: 1.6rem;
-    color: #8b1e2d;
-    text-decoration: underline;
-    text-decoration-thickness: 2px;
-    text-underline-offset: 4px;
-    cursor: pointer;
-    background: none;
-    border: none;
-    padding: 0;
-  }
-  .subject-name:hover { opacity: 0.7; }
   .sync-status {
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.65rem;
@@ -213,6 +196,7 @@
   .outcome-card {
     color: #f4ebd0;
     padding: 28px 22px;
+    transition: background 0.3s ease;
   }
   .outcome-card.faltou { background: #8b1e2d; }
   .outcome-card.veio { background: #0e3a26; }
@@ -221,6 +205,24 @@
     font-size: 4rem;
     line-height: 1;
     margin: 8px 0 16px;
+  }
+  .outcome-card.is-spinning {
+    background: #1a1a1a;
+    transition: none;
+  }
+  .outcome-card.is-spinning .big {
+    animation: spinShake 0.06s linear infinite;
+  }
+  @keyframes spinShake {
+    0%   { transform: translateX(-2px) skewX(-1deg); }
+    50%  { transform: translateX(2px) skewX(1deg); }
+    100% { transform: translateX(-2px) skewX(-1deg); }
+  }
+  .outcome-card.pop { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  @keyframes popIn {
+    0%   { transform: scale(0.9); opacity: 0; }
+    60%  { transform: scale(1.04); opacity: 1; }
+    100% { transform: scale(1); }
   }
   .judge-card {
     background: #1a1a1a; color: #f4ebd0;
@@ -241,6 +243,7 @@
     cursor: pointer;
   }
   .judge-btn:hover { background: rgba(255,255,255,0.1); }
+  .judge-btn:disabled { opacity: 0.4; cursor: not-allowed; }
   .link-btn {
     background: none; border: none; padding: 0;
     color: inherit; cursor: pointer;
@@ -357,8 +360,13 @@
     text-transform: uppercase;
   }
   body.is-admin .admin-badge { display: inline-block; }
+  #confetti {
+    position: fixed; inset: 0;
+    pointer-events: none; z-index: 9999;
+  }
   @media (max-width: 500px) {
     .vote-btn .big { font-size: 1.8rem; }
+    .outcome-card .big { font-size: 3rem; }
   }
 </style>
 </head>
@@ -455,6 +463,8 @@
   </div>
 </div>
 
+<canvas id="confetti"></canvas>
+
 <footer>
   <div class="footer-inner">
     <span>★ CASA DE APOSTAS INTERNA ★</span>
@@ -489,10 +499,107 @@ const prettyDate = (iso) => {
   return `${d} ${months[parseInt(m)-1]} ${y}`;
 };
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
 // Bet shape: { vote: 'sim'|'nao', reason?: string }. Old format was a bare string — getVote/getReason normalize.
 const getVote = (b) => (typeof b === 'string' ? b : b && b.vote);
 const getReason = (b) => (typeof b === 'string' ? null : (b && b.reason) || null);
 
+// ----- Audio (Web Audio API, no assets) -----
+let audioCtx = null;
+function ctx() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(freq, duration, { type = 'sine', volume = 0.25, when = 0 } = {}) {
+  const c = ctx();
+  if (!c) return;
+  const osc = c.createOscillator();
+  const gain = c.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, c.currentTime + when);
+  gain.gain.setValueAtTime(volume, c.currentTime + when);
+  gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + when + duration);
+  osc.connect(gain).connect(c.destination);
+  osc.start(c.currentTime + when);
+  osc.stop(c.currentTime + when + duration);
+}
+function playClick() { tone(700, 0.04, { type: 'square', volume: 0.1 }); }
+function playBetPlaced() {
+  tone(523, 0.08, { type: 'triangle', volume: 0.22 });
+  tone(784, 0.18, { type: 'triangle', volume: 0.28, when: 0.06 });
+  tone(1047, 0.12, { type: 'triangle', volume: 0.18, when: 0.14 });
+}
+function playSpinTick() {
+  tone(280 + Math.random() * 400, 0.04, { type: 'square', volume: 0.09 });
+}
+function playReveal() {
+  tone(110, 0.18, { type: 'sawtooth', volume: 0.22 });
+  tone(220, 0.18, { type: 'sawtooth', volume: 0.22, when: 0.1 });
+  tone(880, 0.4,  { type: 'triangle', volume: 0.3, when: 0.25 });
+}
+function playWinFanfare() {
+  // C major arpeggio
+  [523, 659, 784, 1047].forEach((f, i) => tone(f, 0.16, { type: 'triangle', volume: 0.28, when: i * 0.09 }));
+  tone(1047, 0.55, { type: 'triangle', volume: 0.22, when: 0.45 });
+}
+function playLoseSound() {
+  tone(330, 0.18, { type: 'sine', volume: 0.2 });
+  tone(247, 0.3,  { type: 'sine', volume: 0.2, when: 0.16 });
+}
+
+// ----- Confetti -----
+function fireConfetti() {
+  const canvas = document.getElementById('confetti');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const cctx = canvas.getContext('2d');
+  const colors = ['#8b1e2d', '#0e3a26', '#f4ebd0', '#d4a040', '#1a1a1a'];
+  const particles = [];
+  const origins = [
+    { x: canvas.width * 0.05, y: canvas.height * 0.75, dir: 1 },
+    { x: canvas.width * 0.95, y: canvas.height * 0.75, dir: -1 },
+  ];
+  origins.forEach(o => {
+    for (let i = 0; i < 70; i++) {
+      particles.push({
+        x: o.x, y: o.y,
+        vx: o.dir * (Math.random() * 9 + 4),
+        vy: -Math.random() * 13 - 8,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        size: Math.random() * 7 + 4,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.4,
+      });
+    }
+  });
+  let frames = 0;
+  function tick() {
+    frames++;
+    cctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.28;
+      p.vx *= 0.985;
+      p.rotation += p.rotationSpeed;
+      cctx.save();
+      cctx.translate(p.x, p.y);
+      cctx.rotate(p.rotation);
+      cctx.fillStyle = p.color;
+      cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.55);
+      cctx.restore();
+    });
+    if (frames < 260) requestAnimationFrame(tick);
+    else cctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  tick();
+}
+
+// ----- State -----
 let state = {
   date: tomorrowStr(),
   bets: {},
@@ -501,6 +608,9 @@ let state = {
 let myName = localStorage.getItem('myName') || '';
 let lastSync = null;
 let isWriting = false;
+let isSpinning = false;          // admin-side reveal in progress; skip render-side celebration
+let previousOutcome = null;       // for transition detection
+let firstRenderDone = false;
 
 async function fetchState() {
   try {
@@ -520,7 +630,8 @@ async function fetchState() {
       };
       state = fresh;
       await pushState();
-    } else {
+    } else if (!isSpinning) {
+      // Don't clobber local state while admin is mid-reveal — the local optimistic outcome isn't pushed yet.
       state = remote;
     }
     lastSync = new Date();
@@ -566,6 +677,18 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+function celebrateOutcome() {
+  if (!state.outcome) return;
+  const winningVote = state.outcome === 'faltou' ? 'sim' : 'nao';
+  const myBet = myName ? state.bets[myName] : null;
+  if (myBet && getVote(myBet) === winningVote) {
+    fireConfetti();
+    playWinFanfare();
+  } else if (myBet) {
+    playLoseSound();
+  }
+}
+
 function render() {
   document.getElementById('date').textContent = prettyDate(state.date);
   document.getElementById('estYear').textContent = `EST. ${new Date().getFullYear()}`;
@@ -589,12 +712,22 @@ function render() {
   document.getElementById('noBetsMsg').classList.toggle('hidden', total > 0);
 
   const isAdmin = document.body.classList.contains('is-admin');
+  const oc = document.getElementById('outcomeCard');
   if (state.outcome) {
     document.getElementById('betCard').classList.add('hidden');
     document.getElementById('judgeCard').classList.add('hidden');
-    const oc = document.getElementById('outcomeCard');
+    const wasHidden = oc.classList.contains('hidden');
     oc.classList.remove('hidden');
-    oc.className = `card outcome-card ${state.outcome}`;
+    // Only set classes if not currently mid-spin (spin manages its own state)
+    if (!isSpinning) {
+      oc.className = `card outcome-card ${state.outcome}`;
+      if (wasHidden && firstRenderDone) {
+        // Pop animation for non-admin viewers seeing the result for the first time
+        void oc.offsetWidth;
+        oc.classList.add('pop');
+        setTimeout(() => oc.classList.remove('pop'), 600);
+      }
+    }
     document.getElementById('outcomeText').textContent = state.outcome === 'faltou' ? 'FALTOU.' : 'VEIO.';
     const winningVote = state.outcome === 'faltou' ? 'sim' : 'nao';
     const winners = Object.entries(bets).filter(([_,b]) => getVote(b) === winningVote).map(([n]) => n);
@@ -604,7 +737,7 @@ function render() {
     document.getElementById('undoBtn').classList.toggle('hidden', !isAdmin);
   } else {
     document.getElementById('betCard').classList.remove('hidden');
-    document.getElementById('outcomeCard').classList.add('hidden');
+    oc.classList.add('hidden');
     document.getElementById('judgeCard').classList.toggle('hidden', total === 0 || !isAdmin);
   }
 
@@ -639,6 +772,13 @@ function render() {
     document.getElementById('voteSim').disabled = false;
     document.getElementById('voteNao').disabled = false;
   }
+
+  // Outcome transition: fire celebration for non-admin viewers (admin gets it inside revealOutcomeWithSpin).
+  if (!isSpinning && firstRenderDone && previousOutcome === null && state.outcome !== null) {
+    celebrateOutcome();
+  }
+  previousOutcome = state.outcome;
+  firstRenderDone = true;
 }
 
 function showReasonArea() {
@@ -663,18 +803,56 @@ async function placeBet(vote, reason) {
   localStorage.setItem('myName', name);
   state.bets[name] = reason ? { vote, reason } : { vote };
   hideReasonArea();
+  playBetPlaced();
   render();
   await pushState();
 }
 
-async function setOutcome(outcome) {
+async function revealOutcomeWithSpin(outcome) {
+  if (isSpinning) return;
+  isSpinning = true;
+  document.querySelectorAll('.judge-btn').forEach(b => b.disabled = true);
+
+  const oc = document.getElementById('outcomeCard');
+  const txt = document.getElementById('outcomeText');
+  document.getElementById('betCard').classList.add('hidden');
+  document.getElementById('judgeCard').classList.add('hidden');
+  oc.classList.remove('hidden', 'faltou', 'veio', 'pop');
+  oc.classList.add('is-spinning');
+  document.getElementById('winnersText').textContent = '';
+  document.getElementById('undoBtn').classList.add('hidden');
+
+  const labels = ['FALTOU?', 'VEIO?'];
+  const ticks = 14;
+  for (let i = 0; i < ticks; i++) {
+    txt.textContent = labels[i % 2];
+    playSpinTick();
+    await sleep(70 + i * 14);
+  }
+
+  oc.classList.remove('is-spinning');
+  oc.classList.add(outcome);
+  txt.textContent = outcome === 'faltou' ? 'FALTOU.' : 'VEIO.';
+  playReveal();
+
+  await sleep(550);
+
   state.outcome = outcome;
-  render();
   await pushState();
+
+  isSpinning = false;
+  document.querySelectorAll('.judge-btn').forEach(b => b.disabled = false);
+
+  // After committing, run celebration for the admin too (confetti or lose sound).
+  // previousOutcome is still null here, so the transition logic in render() would fire too — guard it:
+  celebrateOutcome();
+  previousOutcome = state.outcome; // suppress double-fire from render
+  render();
 }
 
 async function undoOutcome() {
   state.outcome = null;
+  previousOutcome = null; // allow re-celebration if it's set again
   render();
   await pushState();
 }
@@ -684,6 +862,7 @@ async function resetRound() {
   state.bets = {};
   state.outcome = null;
   state.date = tomorrowStr();
+  previousOutcome = null;
   render();
   await pushState();
 }
@@ -706,6 +885,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   applyAdmin();
 
+  // Unlock audio context on first interaction (browser autoplay policy).
+  document.addEventListener('click', () => ctx(), { once: true });
+
   document.getElementById('nameInput').addEventListener('input', (e) => {
     const has = !!e.target.value.trim();
     document.getElementById('voteSim').disabled = !has;
@@ -714,6 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('voteSim').addEventListener('click', () => {
     if (!document.getElementById('nameInput').value.trim()) return;
+    playClick();
     showReasonArea();
   });
   document.getElementById('voteNao').addEventListener('click', () => {
@@ -735,7 +918,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('cancelBetBtn').addEventListener('click', hideReasonArea);
 
   document.querySelectorAll('.judge-btn').forEach(btn => {
-    btn.addEventListener('click', () => setOutcome(btn.dataset.outcome));
+    btn.addEventListener('click', () => revealOutcomeWithSpin(btn.dataset.outcome));
   });
 
   document.getElementById('undoBtn').addEventListener('click', undoOutcome);

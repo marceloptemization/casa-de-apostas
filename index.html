@@ -56,10 +56,10 @@
     white-space: nowrap;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
-    text-shadow: 0 0 6px var(--neon-green), 0 0 12px rgba(57, 255, 20, 0.6);
+    text-shadow: 0 0 6px var(--neon-green);
     border-top: 1px solid var(--neon-green);
     border-bottom: 1px solid var(--neon-green);
-    box-shadow: 0 0 22px rgba(57, 255, 20, 0.5), inset 0 0 25px rgba(57, 255, 20, 0.08);
+    box-shadow: 0 0 14px rgba(57, 255, 20, 0.35);
     letter-spacing: 0.2em;
   }
   .ticker-content {
@@ -101,23 +101,41 @@
     50%      { box-shadow: 0 0 16px var(--neon-pink), 0 0 32px var(--neon-pink), 0 0 48px var(--neon-pink); opacity: 0.7; }
   }
 
+  .title-block { margin: 14px 0 16px; }
   h1 {
     font-family: 'Abril Fatface', serif;
     font-size: clamp(2.8rem, 10vw, 5rem);
     line-height: 0.95;
-    margin: 12px 0 16px;
+    margin: 6px 0;
     color: var(--neon-gold);
-    text-shadow:
-      0 0 8px var(--neon-gold),
-      0 0 20px var(--neon-gold),
-      0 0 36px var(--neon-pink),
-      0 0 60px var(--neon-pink);
-    animation: titleFlicker 4s linear infinite;
+    text-shadow: 0 0 12px rgba(255, 214, 10, 0.55);
   }
-  @keyframes titleFlicker {
-    0%, 88%, 92%, 96%, 100% { opacity: 1; }
-    89%, 91% { opacity: 0.85; }
-    93%      { opacity: 0.95; }
+
+  .marquee-bulbs {
+    height: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .marquee-bulbs::before, .marquee-bulbs::after {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, currentColor 30%, transparent 32%);
+    background-size: 22px 14px;
+    background-repeat: repeat-x;
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+  .marquee-bulbs::before {
+    color: var(--neon-gold);
+    animation: bulbBlink 0.8s steps(2) infinite;
+  }
+  .marquee-bulbs::after {
+    color: var(--neon-pink);
+    background-position: 11px 0;
+    animation: bulbBlink 0.8s steps(2) infinite reverse;
+  }
+  @keyframes bulbBlink {
+    0%, 49%   { opacity: 1; }
+    50%, 100% { opacity: 0.15; }
   }
 
   .sync-status {
@@ -134,9 +152,9 @@
     background: var(--bg-card);
     border: 1px solid var(--neon-pink);
     box-shadow:
-      0 0 12px rgba(255, 0, 110, 0.55),
-      0 0 30px rgba(255, 0, 110, 0.18),
-      inset 0 0 30px rgba(255, 0, 110, 0.05);
+      0 0 10px rgba(255, 0, 110, 0.4),
+      0 0 22px rgba(255, 0, 110, 0.12),
+      inset 0 0 24px rgba(255, 0, 110, 0.04);
     padding: 22px;
     margin-bottom: 22px;
     color: var(--text);
@@ -150,7 +168,7 @@
     text-transform: uppercase;
     margin-bottom: 14px;
     color: var(--neon-gold);
-    text-shadow: 0 0 6px rgba(255, 214, 10, 0.7);
+    text-shadow: 0 0 5px rgba(255, 214, 10, 0.5);
   }
 
   @property --sim {
@@ -168,10 +186,7 @@
     transition: --sim 0.5s ease;
     overflow: hidden;
     border: 2px solid var(--neon-gold);
-    box-shadow:
-      0 0 18px rgba(255, 214, 10, 0.6),
-      0 0 14px rgba(255, 0, 110, 0.5),
-      0 0 14px rgba(57, 255, 20, 0.5);
+    box-shadow: 0 0 14px rgba(255, 214, 10, 0.4);
   }
   .odds-text {
     position: absolute;
@@ -195,13 +210,13 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 1rem;
     margin-bottom: 16px;
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.4), inset 0 0 8px rgba(0, 240, 255, 0.08);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.3), inset 0 0 8px rgba(0, 240, 255, 0.08);
     letter-spacing: 0.05em;
   }
   input[type=text]::placeholder { color: rgba(0, 240, 255, 0.45); }
   input:focus {
     outline: none;
-    box-shadow: 0 0 18px var(--neon-cyan), 0 0 30px rgba(0, 240, 255, 0.55), inset 0 0 10px rgba(0, 240, 255, 0.15);
+    box-shadow: 0 0 14px var(--neon-cyan), 0 0 26px rgba(0, 240, 255, 0.45), inset 0 0 10px rgba(0, 240, 255, 0.15);
   }
 
   .vote-grid {
@@ -221,20 +236,20 @@
   }
   .vote-sim {
     border-color: var(--neon-pink);
-    box-shadow: 0 0 14px var(--neon-pink), 0 0 32px rgba(255, 0, 110, 0.5), inset 0 0 24px rgba(255, 0, 110, 0.12);
+    box-shadow: 0 0 12px var(--neon-pink), 0 0 24px rgba(255, 0, 110, 0.4), inset 0 0 20px rgba(255, 0, 110, 0.1);
   }
   .vote-nao {
     border-color: var(--neon-green);
-    box-shadow: 0 0 14px var(--neon-green), 0 0 32px rgba(57, 255, 20, 0.5), inset 0 0 24px rgba(57, 255, 20, 0.12);
+    box-shadow: 0 0 12px var(--neon-green), 0 0 24px rgba(57, 255, 20, 0.4), inset 0 0 20px rgba(57, 255, 20, 0.1);
   }
   .vote-btn:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
   .vote-sim:not(:disabled):hover {
     transform: translateY(-3px) rotate(-1deg);
-    box-shadow: 0 0 24px var(--neon-pink), 0 0 50px rgba(255, 0, 110, 0.7), inset 0 0 30px rgba(255, 0, 110, 0.2);
+    box-shadow: 0 0 22px var(--neon-pink), 0 0 44px rgba(255, 0, 110, 0.6), inset 0 0 26px rgba(255, 0, 110, 0.18);
   }
   .vote-nao:not(:disabled):hover {
     transform: translateY(-3px) rotate(1deg);
-    box-shadow: 0 0 24px var(--neon-green), 0 0 50px rgba(57, 255, 20, 0.7), inset 0 0 30px rgba(57, 255, 20, 0.2);
+    box-shadow: 0 0 22px var(--neon-green), 0 0 44px rgba(57, 255, 20, 0.6), inset 0 0 26px rgba(57, 255, 20, 0.18);
   }
   .vote-btn:active { transform: translateY(0); }
   .vote-btn.bet-selected {
@@ -260,11 +275,11 @@
   }
   .vote-sim .big {
     color: var(--neon-pink);
-    text-shadow: 0 0 10px var(--neon-pink), 0 0 22px var(--neon-pink), 0 0 36px var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink), 0 0 20px var(--neon-pink);
   }
   .vote-nao .big {
     color: var(--neon-green);
-    text-shadow: 0 0 10px var(--neon-green), 0 0 22px var(--neon-green), 0 0 36px var(--neon-green);
+    text-shadow: 0 0 10px var(--neon-green), 0 0 20px var(--neon-green);
   }
 
   .reason-area {
@@ -276,11 +291,11 @@
   .reason-area input[type=text] {
     border-color: var(--neon-pink);
     color: var(--neon-pink);
-    box-shadow: 0 0 10px rgba(255, 0, 110, 0.4), inset 0 0 8px rgba(255, 0, 110, 0.08);
+    box-shadow: 0 0 8px rgba(255, 0, 110, 0.3), inset 0 0 8px rgba(255, 0, 110, 0.08);
   }
   .reason-area input[type=text]::placeholder { color: rgba(255, 0, 110, 0.5); }
   .reason-area input[type=text]:focus {
-    box-shadow: 0 0 18px var(--neon-pink), 0 0 30px rgba(255, 0, 110, 0.5);
+    box-shadow: 0 0 14px var(--neon-pink), 0 0 26px rgba(255, 0, 110, 0.45);
   }
   .reason-actions {
     display: flex; gap: 8px;
@@ -297,11 +312,9 @@
     text-transform: uppercase;
     cursor: pointer;
     font-weight: 700;
-    box-shadow: 0 0 14px var(--neon-green), 0 0 28px rgba(57, 255, 20, 0.5);
+    box-shadow: 0 0 14px var(--neon-green), 0 0 28px rgba(57, 255, 20, 0.45);
   }
-  .confirm-btn:hover {
-    box-shadow: 0 0 22px var(--neon-green), 0 0 44px rgba(57, 255, 20, 0.7);
-  }
+  .confirm-btn:hover { box-shadow: 0 0 22px var(--neon-green), 0 0 40px rgba(57, 255, 20, 0.6); }
   .confirm-btn:disabled {
     opacity: 0.4; cursor: not-allowed; box-shadow: none;
     background: #555; color: #aaa;
@@ -316,9 +329,7 @@
   }
   .cancel-link:hover { color: var(--text); }
 
-  .bet-item {
-    border-bottom: 1px solid rgba(255, 214, 10, 0.18);
-  }
+  .bet-item { border-bottom: 1px solid rgba(255, 214, 10, 0.18); }
   .bet-item.winner {
     background: rgba(57, 255, 20, 0.12);
     box-shadow: inset 0 0 18px rgba(57, 255, 20, 0.18);
@@ -344,14 +355,8 @@
     color: #000;
     letter-spacing: 0.1em;
   }
-  .pill-sim {
-    background: var(--neon-pink);
-    box-shadow: 0 0 8px var(--neon-pink);
-  }
-  .pill-nao {
-    background: var(--neon-green);
-    box-shadow: 0 0 8px var(--neon-green);
-  }
+  .pill-sim { background: var(--neon-pink); box-shadow: 0 0 8px var(--neon-pink); }
+  .pill-nao { background: var(--neon-green); box-shadow: 0 0 8px var(--neon-green); }
 
   .outcome-card {
     color: #fff;
@@ -362,36 +367,30 @@
   .outcome-card.faltou {
     background: radial-gradient(circle at 30% 30%, #ff006e 0%, #5b0029 80%);
     border-color: var(--neon-pink);
-    box-shadow:
-      0 0 30px var(--neon-pink),
-      0 0 70px rgba(255, 0, 110, 0.6),
-      inset 0 0 40px rgba(255, 0, 110, 0.2);
+    box-shadow: 0 0 24px var(--neon-pink), 0 0 50px rgba(255, 0, 110, 0.5), inset 0 0 36px rgba(255, 0, 110, 0.18);
     animation: winningGlow 1.5s ease-in-out infinite;
   }
   .outcome-card.veio {
     background: radial-gradient(circle at 30% 30%, #39ff14 0%, #0a3f00 80%);
     border-color: var(--neon-green);
-    box-shadow:
-      0 0 30px var(--neon-green),
-      0 0 70px rgba(57, 255, 20, 0.6),
-      inset 0 0 40px rgba(57, 255, 20, 0.2);
+    box-shadow: 0 0 24px var(--neon-green), 0 0 50px rgba(57, 255, 20, 0.5), inset 0 0 36px rgba(57, 255, 20, 0.18);
     animation: winningGlow 1.5s ease-in-out infinite;
   }
   @keyframes winningGlow {
     0%, 100% { filter: brightness(1); }
-    50%      { filter: brightness(1.15); }
+    50%      { filter: brightness(1.12); }
   }
   .outcome-card .big {
     font-family: 'Abril Fatface', serif;
     font-size: 4.5rem;
     line-height: 1;
     margin: 10px 0 18px;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px currentColor;
+    text-shadow: 0 0 18px rgba(255, 255, 255, 0.8), 0 0 32px currentColor;
   }
   .outcome-card.is-spinning {
     background: #000;
     border-color: var(--neon-gold);
-    box-shadow: 0 0 30px var(--neon-gold), 0 0 60px rgba(255, 214, 10, 0.6), inset 0 0 40px rgba(255, 214, 10, 0.15);
+    box-shadow: 0 0 24px var(--neon-gold), 0 0 48px rgba(255, 214, 10, 0.5), inset 0 0 32px rgba(255, 214, 10, 0.12);
     transition: none;
     animation: spinFlicker 0.12s linear infinite;
   }
@@ -421,7 +420,7 @@
     color: #fff;
     padding: 22px;
     border-color: var(--neon-gold);
-    box-shadow: 0 0 16px var(--neon-gold), 0 0 32px rgba(255, 214, 10, 0.45);
+    box-shadow: 0 0 14px var(--neon-gold), 0 0 28px rgba(255, 214, 10, 0.35);
   }
   .judge-card .label { color: var(--neon-gold); }
   .judge-btns {
@@ -446,7 +445,7 @@
     background: var(--neon-gold);
     color: #000;
     text-shadow: none;
-    box-shadow: 0 0 22px var(--neon-gold), 0 0 44px rgba(255, 214, 10, 0.6);
+    box-shadow: 0 0 22px var(--neon-gold), 0 0 44px rgba(255, 214, 10, 0.55);
   }
   .judge-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
@@ -478,8 +477,8 @@
     font-size: 0.75rem;
     letter-spacing: 0.15em;
     transform: rotate(-3deg);
-    text-shadow: 0 0 10px var(--neon-pink);
-    box-shadow: 0 0 14px rgba(255, 0, 110, 0.6), inset 0 0 14px rgba(255, 0, 110, 0.15);
+    text-shadow: 0 0 8px var(--neon-pink);
+    box-shadow: 0 0 10px rgba(255, 0, 110, 0.5), inset 0 0 10px rgba(255, 0, 110, 0.1);
     animation: stampWobble 4s ease-in-out infinite;
   }
   @keyframes stampWobble {
@@ -493,7 +492,7 @@
     color: var(--neon-green);
     margin-top: 36px;
     padding: 16px 0;
-    box-shadow: 0 -4px 22px rgba(57, 255, 20, 0.4);
+    box-shadow: 0 -3px 14px rgba(57, 255, 20, 0.3);
   }
   .footer-inner {
     max-width: 800px; margin: 0 auto;
@@ -502,7 +501,7 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.7rem;
     letter-spacing: 0.18em;
-    text-shadow: 0 0 6px var(--neon-green);
+    text-shadow: 0 0 5px var(--neon-green);
   }
 
   .error-banner {
@@ -511,7 +510,7 @@
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.78rem;
     text-align: center;
-    box-shadow: 0 0 18px var(--neon-pink);
+    box-shadow: 0 0 14px var(--neon-pink);
   }
 
   .tabs { display: flex; margin-bottom: 22px; }
@@ -526,8 +525,8 @@
     letter-spacing: 0.18em;
     text-transform: uppercase;
     color: var(--neon-cyan);
-    text-shadow: 0 0 8px var(--neon-cyan);
-    box-shadow: 0 0 10px rgba(0, 240, 255, 0.35), inset 0 0 10px rgba(0, 240, 255, 0.08);
+    text-shadow: 0 0 6px var(--neon-cyan);
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.3), inset 0 0 8px rgba(0, 240, 255, 0.06);
     font-weight: 700;
   }
   .tab-btn + .tab-btn { border-left-width: 0; }
@@ -535,7 +534,7 @@
     background: var(--neon-cyan);
     color: #000;
     text-shadow: none;
-    box-shadow: 0 0 22px var(--neon-cyan), 0 0 44px rgba(0, 240, 255, 0.55);
+    box-shadow: 0 0 18px var(--neon-cyan), 0 0 36px rgba(0, 240, 255, 0.5);
   }
   .tab-count { opacity: 0.85; margin-left: 6px; color: var(--neon-gold); }
   .tab-btn.active .tab-count { color: #8b1e2d; }
@@ -579,14 +578,87 @@
     padding: 2px 8px;
     margin-left: 10px;
     text-transform: uppercase;
-    text-shadow: 0 0 6px var(--neon-gold);
-    box-shadow: 0 0 10px rgba(255, 214, 10, 0.45);
+    text-shadow: 0 0 5px var(--neon-gold);
+    box-shadow: 0 0 8px rgba(255, 214, 10, 0.4);
   }
   body.is-admin .admin-badge { display: inline-block; }
 
   #confetti {
     position: fixed; inset: 0;
     pointer-events: none; z-index: 9999;
+  }
+
+  /* Toast (new bet feed) */
+  .toast-container {
+    position: fixed;
+    top: 56px;
+    right: 14px;
+    z-index: 9998;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none;
+    max-width: calc(100vw - 28px);
+    width: 320px;
+  }
+  .toast {
+    background: var(--bg-card);
+    border: 2px solid var(--neon-cyan);
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    box-shadow: 0 0 14px var(--neon-cyan), 0 0 28px rgba(0, 240, 255, 0.35);
+    animation: toastSlide 4.5s ease forwards;
+    pointer-events: auto;
+    font-size: 0.82rem;
+  }
+  .toast.toast-sim { border-color: var(--neon-pink); box-shadow: 0 0 14px var(--neon-pink), 0 0 28px rgba(255, 0, 110, 0.35); }
+  .toast.toast-nao { border-color: var(--neon-green); box-shadow: 0 0 14px var(--neon-green), 0 0 28px rgba(57, 255, 20, 0.35); }
+  .toast-head { display: flex; align-items: center; gap: 8px; }
+  .toast-name { font-weight: 700; color: var(--neon-gold); text-shadow: 0 0 5px rgba(255, 214, 10, 0.45); }
+  .toast-reason { font-style: italic; font-size: 0.78rem; opacity: 0.85; margin-top: 6px; }
+  @keyframes toastSlide {
+    0%   { transform: translateX(120%); opacity: 0; }
+    8%   { transform: translateX(0); opacity: 1; }
+    88%  { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(120%); opacity: 0; }
+  }
+
+  /* Win/lose fullscreen overlay */
+  .outcome-overlay {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .outcome-overlay.show.win  { animation: overlayFlash 1.8s ease forwards; background: radial-gradient(circle, rgba(57,255,20,0.35), rgba(0,0,0,0.92)); }
+  .outcome-overlay.show.lose { animation: overlayFlash 1.8s ease forwards; background: radial-gradient(circle, rgba(255,0,110,0.35), rgba(0,0,0,0.92)); }
+  @keyframes overlayFlash {
+    0%   { opacity: 0; }
+    12%  { opacity: 1; }
+    82%  { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  .outcome-overlay-text {
+    font-family: 'Abril Fatface', serif;
+    font-size: clamp(4rem, 18vw, 10rem);
+    letter-spacing: 0.05em;
+    animation: textPulse 0.45s ease infinite alternate;
+    padding: 0 20px;
+    text-align: center;
+  }
+  .outcome-overlay.win .outcome-overlay-text {
+    color: var(--neon-green);
+    text-shadow: 0 0 22px var(--neon-green), 0 0 44px var(--neon-green), 0 0 66px var(--neon-gold);
+  }
+  .outcome-overlay.lose .outcome-overlay-text {
+    color: var(--neon-pink);
+    text-shadow: 0 0 22px var(--neon-pink), 0 0 44px var(--neon-pink);
+  }
+  @keyframes textPulse {
+    from { transform: scale(1); }
+    to   { transform: scale(1.06); }
   }
 
   @media (max-width: 500px) {
@@ -608,7 +680,11 @@
   <div class="header-row">
     <div>
       <div class="live"><span class="live-dot"></span>EM DIRETO · <span id="date"></span><span class="admin-badge">ADMIN</span></div>
-      <h1>Vem ou<br>não vem?</h1>
+      <div class="title-block">
+        <div class="marquee-bulbs"></div>
+        <h1>Vem ou<br>não vem?</h1>
+        <div class="marquee-bulbs"></div>
+      </div>
       <div class="sync-status" id="syncStatus">a sincronizar…</div>
     </div>
     <div class="stamp">AMANHÃ</div>
@@ -689,6 +765,12 @@
   </div>
 </div>
 
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="outcome-overlay" id="outcomeOverlay">
+  <div class="outcome-overlay-text" id="outcomeOverlayText"></div>
+</div>
+
 <canvas id="confetti"></canvas>
 
 <footer>
@@ -752,15 +834,14 @@ function tone(freq, duration, { type = 'sine', volume = 0.25, when = 0 } = {}) {
   osc.start(c.currentTime + when);
   osc.stop(c.currentTime + when + duration);
 }
-function playClick() { tone(700, 0.04, { type: 'square', volume: 0.1 }); }
+function playClick()      { tone(700, 0.04, { type: 'square', volume: 0.1 }); }
+function playToastChime() { tone(1320, 0.08, { type: 'triangle', volume: 0.16 }); tone(1760, 0.12, { type: 'triangle', volume: 0.13, when: 0.06 }); }
 function playBetPlaced() {
   tone(523, 0.08, { type: 'triangle', volume: 0.22 });
   tone(784, 0.18, { type: 'triangle', volume: 0.28, when: 0.06 });
   tone(1047, 0.12, { type: 'triangle', volume: 0.18, when: 0.14 });
 }
-function playSpinTick() {
-  tone(280 + Math.random() * 400, 0.04, { type: 'square', volume: 0.09 });
-}
+function playSpinTick() { tone(280 + Math.random() * 400, 0.04, { type: 'square', volume: 0.09 }); }
 function playReveal() {
   tone(110, 0.18, { type: 'sawtooth', volume: 0.22 });
   tone(220, 0.18, { type: 'sawtooth', volume: 0.22, when: 0.1 });
@@ -775,7 +856,7 @@ function playLoseSound() {
   tone(247, 0.3,  { type: 'sine', volume: 0.2, when: 0.16 });
 }
 
-// ----- Confetti (neon palette) -----
+// ----- Confetti -----
 function fireConfetti() {
   const canvas = document.getElementById('confetti');
   canvas.width = window.innerWidth;
@@ -817,10 +898,7 @@ function fireConfetti() {
       cctx.save();
       cctx.translate(p.x, p.y);
       cctx.rotate(p.rotation);
-      if (p.glow) {
-        cctx.shadowColor = p.color;
-        cctx.shadowBlur = 14;
-      }
+      if (p.glow) { cctx.shadowColor = p.color; cctx.shadowBlur = 14; }
       cctx.fillStyle = p.color;
       cctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.55);
       cctx.restore();
@@ -829,6 +907,38 @@ function fireConfetti() {
     else cctx.clearRect(0, 0, canvas.width, canvas.height);
   }
   tick();
+}
+
+// ----- Toasts -----
+function showBetToast(name, vote, reason) {
+  if (name === myName) return;
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast toast-${vote}`;
+  const voteLabel = vote === 'sim' ? 'FALTA' : 'VEM';
+  toast.innerHTML = `
+    <div class="toast-head">
+      <span class="toast-name">${escapeHtml(name)}</span>
+      <span style="opacity:0.6;">apostou</span>
+      <span class="bet-pill pill-${vote}">${voteLabel}</span>
+    </div>
+    ${reason ? `<div class="toast-reason">"${escapeHtml(reason)}"</div>` : ''}
+  `;
+  container.appendChild(toast);
+  playToastChime();
+  setTimeout(() => toast.remove(), 4600);
+}
+
+// ----- Outcome overlay -----
+function showOutcomeOverlay(won) {
+  const overlay = document.getElementById('outcomeOverlay');
+  const text = document.getElementById('outcomeOverlayText');
+  overlay.classList.remove('show', 'win', 'lose');
+  text.textContent = won ? 'VENCESTE!' : 'PERDESTE.';
+  overlay.classList.add(won ? 'win' : 'lose');
+  void overlay.offsetWidth;
+  overlay.classList.add('show');
+  setTimeout(() => overlay.classList.remove('show', 'win', 'lose'), 1800);
 }
 
 // ----- State -----
@@ -843,6 +953,23 @@ let isWriting = false;
 let isSpinning = false;
 let previousOutcome = null;
 let firstRenderDone = false;
+let knownBettors = new Set();
+let firstSync = true;
+
+function processBetUpdates() {
+  const current = state.bets || {};
+  const currentNames = new Set(Object.keys(current));
+  if (!firstSync) {
+    currentNames.forEach(name => {
+      if (!knownBettors.has(name)) {
+        const bet = current[name];
+        showBetToast(name, getVote(bet), getReason(bet));
+      }
+    });
+  }
+  knownBettors = currentNames;
+  firstSync = false;
+}
 
 async function fetchState() {
   try {
@@ -862,6 +989,7 @@ async function fetchState() {
     }
     lastSync = new Date();
     hideError();
+    processBetUpdates();
     render();
   } catch (e) {
     showError('Erro de sincronização. A tentar de novo…');
@@ -905,9 +1033,11 @@ function celebrateOutcome() {
   const winningVote = state.outcome === 'faltou' ? 'sim' : 'nao';
   const myBet = myName ? state.bets[myName] : null;
   if (myBet && getVote(myBet) === winningVote) {
+    showOutcomeOverlay(true);
     fireConfetti();
     playWinFanfare();
   } else if (myBet) {
+    showOutcomeOverlay(false);
     playLoseSound();
   }
 }
@@ -1022,6 +1152,7 @@ async function placeBet(vote, reason) {
   myName = name;
   localStorage.setItem('myName', name);
   state.bets[name] = reason ? { vote, reason } : { vote };
+  knownBettors.add(name); // suppress self-toast on next fetch
   hideReasonArea();
   playBetPlaced();
   render();
@@ -1081,6 +1212,7 @@ async function resetRound() {
   state.outcome = null;
   state.date = tomorrowStr();
   previousOutcome = null;
+  knownBettors = new Set();
   render();
   await pushState();
 }
